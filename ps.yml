@@ -1,0 +1,36 @@
+app: PrusaSlicer
+union: true
+
+ingredients:
+  dist: buster
+  sources:
+    - deb http://raspbian.raspberrypi.org/raspbian/ buster main contrib non-free rpi
+    - deb http://archive.raspberrypi.org/debian/ buster main
+  packages:
+    - libboost-dev 
+    - libboost-regex-dev 
+    - libboost-filesystem-dev 
+    - libboost-thread-dev 
+    - libboost-log-dev 
+    - libboost-locale-dev 
+    - libcurl4-openssl-dev 
+    - libwxgtk3.0-dev 
+    - libtbb-dev
+  script:
+    - # sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev
+    - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
+    - cd PrusaSlicer-build && git checkout version_2.0.0 && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 && time make -j4
+script:
+  - mkdir -p ./usr/local/share/PrusaSlicer && cp -a ../PrusaSlicer-build/resources/* ./usr/local/share/PrusaSlicer/
+  - mkdir -p ./usr/bin/ && cp -R ../PrusaSlicer-build/rpi-build/src/prusa-slicer ./usr/bin/
+  - cp ../PrusaSlicer-build/resources/icons/PrusaSlicer.png PrusaSlicer.png
+  - cat > ./PrusaSlicer.desktop <<EOF
+  - [Desktop Entry]
+  - Name=PrusaSlicer
+  - Exec=prusa-slicer
+  - Icon=PrusaSlicer
+  - Terminal=false
+  - Type=Application
+  - Categories=Graphics;3DGraphics;
+  - X-AppImage-Version=2.0.0+linux64.glibc2.17
+  - EOF
