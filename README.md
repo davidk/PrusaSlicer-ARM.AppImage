@@ -20,6 +20,6 @@ Run `./build.sh` in the root of the repository. This will install dependencies f
 
 # Needs to be implemented (contributions welcome)
 
-- [] Version tagging post-build
+- [ ] Version tagging post-build
 
-- [] More dependency bundling with pkg2appimage
+- [ ] More dependency bundling with pkg2appimage
