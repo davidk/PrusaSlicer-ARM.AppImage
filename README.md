@@ -2,6 +2,8 @@
 
 PrusaSlicer packaged in an ARM AppImage for the Raspberry Pi 4. Build utilities and releases.
 
+To get a pre-built AppImage, see [Releases](https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases).
+
 # Tested with
 
 Raspberry Pi 4 (Raspbian Buster), Raspberry Pi 3 (Raspbian Buster)
