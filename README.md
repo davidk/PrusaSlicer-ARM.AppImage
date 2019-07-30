@@ -18,9 +18,11 @@ These need to be installed on Raspbian Buster for the AppImage to work.
     libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev \
     libwxgtk3.0-dev libtbb-dev
     
-# Building
+# Building an AppImage
 
-Run `./build.sh` in the root of the repository. This will install dependencies for building and drop an AppImage into `PrusaSlicer-ARM.AppImage/pkg2appimage/out`.
+Requirement: Raspberry Pi 4 (or better).
+
+Run `./build.sh` in the root of the repository. This will install dependencies for building, compile PrusaSlicer, and drop a AppImage into `PrusaSlicer-ARM.AppImage/pkg2appimage/out`.
 
 # Needs to be implemented (contributions welcome)
 
