@@ -20,7 +20,7 @@ ingredients:
   script:
     - # sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev
     - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
-    - cd PrusaSlicer-build && git checkout version_2.1.0-beta2 && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 && time make -j4
+    - cd PrusaSlicer-build && git checkout version_2.1.0-beta3 && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 && time make -j4
 script:
   - mkdir -p ./usr/local/share/PrusaSlicer && cp -a ../PrusaSlicer-build/resources/* ./usr/local/share/PrusaSlicer/
   - mkdir -p ./usr/bin/ && cp -R ../PrusaSlicer-build/rpi-build/src/prusa-slicer ./usr/bin/
