@@ -30,6 +30,4 @@ Copy the AppImage into a good location and run it.
 
 # Needs to be implemented (contributions welcome)
 
-- [ ] Version tagging post-build
-
 - [ ] More dependency bundling with pkg2appimage
