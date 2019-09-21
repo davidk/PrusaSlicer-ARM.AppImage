@@ -34,3 +34,6 @@ script:
   - Type=Application
   - Categories=Graphics;3DGraphics;
   - EOF
+  - for package in libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev libtbb-dev libcereal-dev; do
+  - dpkg -L ${package} | tail -n2 +2 | xargs -I{} cp -r --parents "{}" ./
+  - done
