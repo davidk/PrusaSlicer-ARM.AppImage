@@ -70,18 +70,39 @@ else
   sleep 5
 fi
 
-if sudo apt install -y ${DEPS_REQUIRED}; then
-  echo
-  echo "Dependencies installed. Proceeding with installation .."
-  echo
-  [[ -d "./pkg2appimage" ]] || git clone https://github.com/AppImage/pkg2appimage 
-  OLD_CWD="$(pwd)"
-  cp ps.yml ./pkg2appimage 
-  sed -i "s#VERSION_PLACEHOLDER#version_${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
-  cd pkg2appimage 
-  SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
-  echo "Finished build process."
-  cd $OLD_CWD
-  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
-  echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
+if ! sudo apt install -y ${DEPS_REQUIRED}; then
+  echo "Unable to run 'apt install' to install dependencies. Were there any errors displayed above?"
 fi
+
+echo
+echo "Dependencies installed. Proceeding with installation .."
+echo
+
+[[ -d "./pkg2appimage" ]] || git clone https://github.com/AppImage/pkg2appimage 
+OLD_CWD="$(pwd)"
+cp ps.yml ./pkg2appimage 
+sed -i "s#VERSION_PLACEHOLDER#version_${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
+cd pkg2appimage 
+SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
+echo "Finished build process."
+
+
+echo "Here's some information to help with generating and posting a release on GitHub:"
+
+cat <<EOF
+Tag: ${LATEST_VERSION}
+-----
+This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}).
+
+To use this AppImage, dependencies on the host are needed (Raspbian Buster):
+
+apt install -y ${DEPS_REQUIRED}
+
+After installation, chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage and run it.
+-----
+EOF
+
+cd $OLD_CWD
+mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
+echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
+
