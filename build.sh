@@ -32,6 +32,17 @@ fi
 # Grab the latest upstream release version number
 LATEST_VERSION="$(curl -SsL ${LATEST_RELEASE} | jq -r '.tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
 
+read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version? Or continue (leave blank)? " -r
+if [[ "${REPLY}" != "" ]]
+then
+  echo
+  echo "Version will be set to ${REPLY}"
+  LATEST_VERSION="${REPLY}"
+else
+  echo
+  echo "Okay, continuing with the version from the API."
+fi
+
 if [[ -z "${LATEST_VERSION}" ]]; then
 
   echo "Could not determine the latest version."
@@ -92,7 +103,7 @@ echo "Here's some information to help with generating and posting a release on G
 cat <<EOF
 Tag: ${LATEST_VERSION}
 -----
-This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}).
+This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/version_${LATEST_VERSION}).
 
 To use this AppImage, dependencies on the host are needed (Raspbian Buster):
 
