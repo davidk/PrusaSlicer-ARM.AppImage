@@ -16,7 +16,7 @@ echo "Greetings from the PrusaSlicer ARM AppImage build assistant .."
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
 # Dependencies fed to apt for installation
-DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev"
+DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev"
 
 read -p "May I use 'curl' and 'jq' to check for the latest PrusaSlicer version name? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -56,6 +56,26 @@ else
   echo "It looks like the latest version of PrusaSlicer is ${LATEST_VERSION}"
 fi
 
+echo 
+echo '******************************************************************************************'
+echo '* This package will need to be downloaded and installed (this build requires a later ver) *'
+echo '******************************************************************************************'
+
+echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.1-1_armhf.deb"
+
+read -p "May I use 'curl' and 'dpkg' to install the Debian package above? [N/y] " -n 1 -r
+if ! [[ $REPLY =~ ^[Yy]$ ]]
+then
+  echo
+  echo "Ok. Exiting here."
+  exit 1
+else
+  echo
+  echo "Installing package .."
+  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.1-1_armhf.deb" > $PWD/libcgal-dev_5.0.1-1_armhf.deb
+  sudo dpkg -i $PWD/libcgal-dev_5.0.1-1_armhf.deb
+  echo "Done installing package .."
+fi
 
 echo
 echo '**********************************************************************************'
@@ -71,7 +91,7 @@ echo "---"
 read -p "May I use 'sudo apt install -y' to check for and install these dependencies? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
 then
-  echo
+  echo "$REPLY"
   echo "Ok. Exiting here."
   exit 1
 else
@@ -83,6 +103,7 @@ fi
 
 if ! sudo apt install -y ${DEPS_REQUIRED}; then
   echo "Unable to run 'apt install' to install dependencies. Were there any errors displayed above?"
+  exit 1
 fi
 
 echo
