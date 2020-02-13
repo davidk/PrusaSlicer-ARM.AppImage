@@ -88,7 +88,7 @@ done
 
 echo "---"
 
-read -p "May I use 'sudo apt install -y' to check for and install these dependencies? [N/y] " -n 1 -r
+read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo "$REPLY"
@@ -101,8 +101,8 @@ else
   sleep 5
 fi
 
-if ! sudo apt install -y ${DEPS_REQUIRED}; then
-  echo "Unable to run 'apt install' to install dependencies. Were there any errors displayed above?"
+if ! sudo apt-get install -y ${DEPS_REQUIRED}; then
+  echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
   exit 1
 fi
 
@@ -128,9 +128,9 @@ This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.c
 
 To use this AppImage, dependencies on the host are needed (Raspbian Buster):
 
-apt install -y ${DEPS_REQUIRED}
+    ```sudo apt-get install -y ${DEPS_REQUIRED}```
 
-After installation, chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage and run it.
+After installation, ```chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage``` and run it.
 -----
 EOF
 
