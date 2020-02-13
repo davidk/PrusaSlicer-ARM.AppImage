@@ -6,19 +6,7 @@ ingredients:
   sources:
     - deb http://raspbian.raspberrypi.org/raspbian/ buster main contrib non-free rpi
     - deb http://archive.raspberrypi.org/debian/ buster main
-  packages:
-    - libboost-dev 
-    - libboost-regex-dev 
-    - libboost-filesystem-dev 
-    - libboost-thread-dev 
-    - libboost-log-dev 
-    - libboost-locale-dev 
-    - libcurl4-openssl-dev 
-    - libwxgtk3.0-dev 
-    - libtbb-dev
-    - libcereal-dev
   script:
-    - # sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev
     - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
     - cd PrusaSlicer-build && git fetch && git checkout -f VERSION_PLACEHOLDER && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 && time make -j4
 script:
@@ -34,4 +22,3 @@ script:
   - Type=Application
   - Categories=Graphics;3DGraphics;
   - EOF
-  - for i in $(dpkg -L libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev libtbb-dev libcereal-dev libwxbase3.0-dev); do test -f ${i} && rsync -avPR ${i} ./; done ;
