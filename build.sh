@@ -72,8 +72,8 @@ then
 else
   echo
   echo "Installing package .."
-  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.1-1_armhf.deb" > $PWD/libcgal-dev_5.0.1-1_armhf.deb
-  sudo dpkg -i $PWD/libcgal-dev_5.0.1-1_armhf.deb
+  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3_armhf.deb" > $PWD/libcgal-dev_5.0.2-3_armhf.deb
+  sudo dpkg -i $PWD/libcgal-dev_5.0.2-3_armhf.deb
   echo "Done installing package .."
 fi
 
