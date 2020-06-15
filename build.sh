@@ -18,6 +18,23 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest
 # Dependencies fed to apt for installation
 DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev"
 
+if ! hash jq curl >/dev/null; then
+  echo
+  read -p "It looks like jq or curl are not installed. To get the latest version of PrusaSlicer, I need to install jq (to parse JSON output) and curl (to get information from GitHub). May I install these? [N/y] " -n 1 -r
+  if ! [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    echo "Ok. Exiting here."
+    exit 1
+  else
+    echo
+    echo "Thanks, i'll get these installed .."
+    if ! sudo apt-get install -y curl jq; then
+      echo "Unable to install curl/jq. The error output might have some answers as to what went wrong (above)."
+      exit 1
+    fi
+  fi
+fi
+
 read -p "May I use 'curl' and 'jq' to check for the latest PrusaSlicer version name? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -27,6 +44,7 @@ then
 else
   echo
   echo "Thanks! I will report back with the version i've found."
+  echo
 fi
 
 # Grab the latest upstream release version number
@@ -72,8 +90,21 @@ then
 else
   echo
   echo "Installing package .."
-  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3_armhf.deb" > $PWD/libcgal-dev_5.0.2-3_armhf.deb
-  sudo dpkg -i $PWD/libcgal-dev_5.0.2-3_armhf.deb
+  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3_armhf.deb" > "${PWD}/libcgal-dev_5.0.2-3_armhf.deb"
+  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.2-3_armhf.deb"; then
+    read -p "It looks like the installation failed. This is normal on a first attempt. May I run apt install -f to bring in missing dependencies? [N/y] " -n 1 -r
+
+    if ! [[ $REPLY =~ ^[Yy]$ ]]
+    then
+      echo "$REPLY"
+      echo "Ok. Exiting here."
+      exit 1
+    else
+      echo
+      sudo apt install -f
+    fi
+    
+  fi
   echo "Done installing package .."
 fi
 
@@ -114,7 +145,7 @@ echo
 OLD_CWD="$(pwd)"
 cp ps.yml ./pkg2appimage 
 sed -i "s#VERSION_PLACEHOLDER#version_${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
-cd pkg2appimage 
+cd pkg2appimage || exit
 SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
 echo "Finished build process."
 
@@ -134,7 +165,7 @@ After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage\
 -----
 EOF
 
-cd $OLD_CWD
+cd "${OLD_CWD}" || exit
 mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
 echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
 
