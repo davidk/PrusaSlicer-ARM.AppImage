@@ -48,9 +48,9 @@ else
 fi
 
 # Grab the latest upstream release version number
-LATEST_VERSION="$(curl -SsL ${LATEST_RELEASE} | jq -r '.tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
+LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r '.tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
 
-read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version? Or continue (leave blank)? " -r
+read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
 if [[ "${REPLY}" != "" ]]
 then
   echo
@@ -71,7 +71,7 @@ if [[ -z "${LATEST_VERSION}" ]]; then
   echo "${LATEST_VERSION}"
   exit 1
 else
-  echo "It looks like the latest version of PrusaSlicer is ${LATEST_VERSION}"
+  echo "I'll be building PrusaSlicer using ${LATEST_VERSION}"
 fi
 
 echo 
@@ -79,7 +79,7 @@ echo '**************************************************************************
 echo '* This package will need to be downloaded and installed (this build requires a later ver) *'
 echo '******************************************************************************************'
 
-echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.1-1_armhf.deb"
+echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3+b1_armhf.deb"
 
 read -p "May I use 'curl' and 'dpkg' to install the Debian package above? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -90,8 +90,8 @@ then
 else
   echo
   echo "Installing package .."
-  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3_armhf.deb" > "${PWD}/libcgal-dev_5.0.2-3_armhf.deb"
-  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.2-3_armhf.deb"; then
+  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3+b1_armhf.deb" > "${PWD}/libcgal-dev_5.0.2-3+b1_armhf.deb"
+  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.2-3+b1_armhf.deb"; then
     read -p "It looks like the installation failed. This is normal on a first attempt. May I run apt install -f to bring in missing dependencies? [N/y] " -n 1 -r
 
     if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -144,7 +144,7 @@ echo
 [[ -d "./pkg2appimage" ]] || git clone https://github.com/AppImage/pkg2appimage 
 OLD_CWD="$(pwd)"
 cp ps.yml ./pkg2appimage 
-sed -i "s#VERSION_PLACEHOLDER#version_${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
+sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
 cd pkg2appimage || exit
 SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
 echo "Finished build process."
@@ -155,7 +155,7 @@ echo "Here's some information to help with generating and posting a release on G
 cat <<EOF
 Tag: ${LATEST_VERSION}
 -----
-This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/version_${LATEST_VERSION}).
+This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}).
 
 To use this AppImage, dependencies on the host are needed (Raspbian Buster):
 
