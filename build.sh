@@ -161,11 +161,11 @@ To use this AppImage, dependencies on the host are needed (Raspbian Buster):
 
     \`\`\`sudo apt-get install -y ${DEPS_REQUIRED}\`\`\`
 
-After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage\`\`\` and run it.
+After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage\`\`\` and run it.
 -----
 EOF
 
 cd "${OLD_CWD}" || exit
-mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
-echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION}-armhf.AppImage"
+mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage"
+echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage"
 
