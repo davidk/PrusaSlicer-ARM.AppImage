@@ -79,7 +79,7 @@ echo '**************************************************************************
 echo '* This package will need to be downloaded and installed (this build requires a later ver) *'
 echo '******************************************************************************************'
 
-echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3+b1_armhf.deb"
+echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb"
 
 read -p "May I use 'curl' and 'dpkg' to install the Debian package above? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -90,8 +90,8 @@ then
 else
   echo
   echo "Installing package .."
-  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.2-3+b1_armhf.deb" > "${PWD}/libcgal-dev_5.0.2-3+b1_armhf.deb"
-  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.2-3+b1_armhf.deb"; then
+  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb" > "${PWD}/libcgal-dev_5.0.3-1_armhf.deb"
+  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.3-1_armhf.deb"; then
     read -p "It looks like the installation failed. This is normal on a first attempt. May I run apt install -f to bring in missing dependencies? [N/y] " -n 1 -r
 
     if ! [[ $REPLY =~ ^[Yy]$ ]]
