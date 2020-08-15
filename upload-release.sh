@@ -10,7 +10,7 @@ source ~/.config/.githubconfig
 
 FILE="$1"
 
-[[ -z "$FILE" ]] && echo "usage: $0 [file to upload]" && exit 1;
+[[ -e "$FILE" ]] || echo "usage: $0 [file to upload]" && exit 1;
 
 RELEASE_URL="https://uploads.github.com/repos/${repo}/releases/${release_id}/assets?name=$(basename $FILE)"
 
