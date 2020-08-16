@@ -18,6 +18,10 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest
 # Dependencies fed to apt for installation
 DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev"
 
+# URL to the latest libcgal-dev
+LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb"
+
+
 if ! hash jq curl >/dev/null; then
   echo
   read -p "It looks like jq or curl are not installed. To get the latest version of PrusaSlicer, I need to install jq (to parse JSON output) and curl (to get information from GitHub). May I install these? [N/y] " -n 1 -r
@@ -79,7 +83,7 @@ echo '**************************************************************************
 echo '* This package will need to be downloaded and installed (this build requires a later ver) *'
 echo '******************************************************************************************'
 
-echo "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb"
+echo "${LIBCGAL_URL}"
 
 read -p "May I use 'curl' and 'dpkg' to install the Debian package above? [N/y] " -n 1 -r
 if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -90,8 +94,8 @@ then
 else
   echo
   echo "Installing package .."
-  curl -sSL "http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb" > "${PWD}/libcgal-dev_5.0.3-1_armhf.deb"
-  if ! sudo dpkg -i "${PWD}/libcgal-dev_5.0.3-1_armhf.deb"; then
+  curl -sSL "${LIBCGAL_URL}" > "${PWD}/${LIBCGAL_URL##*/}"
+  if ! sudo dpkg -i "${PWD}/${LIBCGAL_URL##*/}"; then
     read -p "It looks like the installation failed. This is normal on a first attempt. May I run apt install -f to bring in missing dependencies? [N/y] " -n 1 -r
 
     if ! [[ $REPLY =~ ^[Yy]$ ]]
@@ -148,7 +152,6 @@ sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml
 cd pkg2appimage || exit
 SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
 echo "Finished build process."
-
 
 echo "Here's some information to help with generating and posting a release on GitHub:"
 
