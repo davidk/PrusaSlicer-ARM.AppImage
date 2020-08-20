@@ -2,7 +2,7 @@
 
 PrusaSlicer packaged in an ARM AppImage for the Raspberry Pi 4. Build utilities and [releases](https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases).
 
-**To get a pre-built AppImage**, see [Releases](https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases).
+**To get a pre-built AppImage**, see [Releases](https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases). Periodic builds of the latest commits upstream are also [available here](https://github.com/davidk/PrusaSlicer-ARM.AppImage/releases/tag/upstream-dev).
 
 ![Screenshot showing PrusaSlicer running on a Pi with system details](prusaslicer-on-pi.png)
 
