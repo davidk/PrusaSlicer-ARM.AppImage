@@ -19,7 +19,7 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest
 DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev"
 
 # URL to the latest libcgal-dev
-LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.0.3-1_armhf.deb"
+LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.1-1+b1_armhf.deb"
 
 
 if ! hash jq curl >/dev/null; then
