@@ -3,13 +3,15 @@ union: true
 
 ingredients:
   dist: buster
-  sources:
-    - deb http://raspbian.raspberrypi.org/raspbian/ buster main contrib non-free rpi
-    - deb http://archive.raspberrypi.org/debian/ buster main
   script:
     - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
     - cd PrusaSlicer-build && git fetch && git checkout -f VERSION_PLACEHOLDER && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 -DSLIC3R_GTK=3 && time make -j4
 script:
+  # Workaround to enable (usage on X-Forwarded-SSH). Basic theme and icon sets for GTK3
+  - mkdir -p ./usr/share/mime/packages && cp -a /usr/share/mime/packages/freedesktop.org.xml ./usr/share/mime/packages/
+  - update-mime-database ./usr/share/mime
+  - mkdir -p ./usr/share/icons/Adwaita/ && cp -a /usr/share/icons/Adwaita/* ./usr/share/icons/Adwaita/
+
   - mkdir -p ./usr/local/share/PrusaSlicer && cp -a ../PrusaSlicer-build/resources/* ./usr/local/share/PrusaSlicer/
   - mkdir -p ./usr/bin/ && cp -R ../PrusaSlicer-build/rpi-build/src/prusa-slicer ./usr/bin/
   - cp ../PrusaSlicer-build/resources/icons/PrusaSlicer.png PrusaSlicer.png
