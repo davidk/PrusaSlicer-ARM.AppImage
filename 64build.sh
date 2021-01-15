@@ -13,7 +13,7 @@ echo "Greetings from the PrusaSlicer ARM64 AppImage build assistant .."
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
 # Dependencies fed to apt for installation
-DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev libwxgtk3.0-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libnlopt-dev libdbus-1-dev imagemagick libgtk-3-dev libwxgtk3.0-gtk3-dev"
+DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev libwxgtk3.0-dev"
 
 # URL to the latest libcgal-dev
 LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1_arm64.deb"
