@@ -178,11 +178,11 @@ cat <<EOF
   
       \`\`\`sudo apt-get install -y ${DEPS_REQUIRED}\`\`\`
   
-  After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage\`\`\` and run it.
+  After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage\`\`\` and run it.
   -----
 EOF
   
   cd "${OLD_CWD}" || exit
-  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-armhf.AppImage"
-  echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-armhf.AppImage"
+  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-${DPKG_ARCH}.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage"
+  echo "The final build artifact is available at: $(readlink -f ./pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage)"
 done
