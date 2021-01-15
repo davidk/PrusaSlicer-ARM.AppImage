@@ -10,7 +10,6 @@
 #   - jq
 #   - curl
 
-echo "Greetings from the PrusaSlicer ARM AppImage build assistant .."
 
 # PrusaSlicer's GitHub API URL
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
@@ -18,9 +17,16 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest
 # Dependencies fed to apt for installation
 DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev libwxgtk3.0-dev"
 
-# URL to the latest libcgal-dev
-LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1_armhf.deb"
+DPKG_ARCH="$(dpkg --print-architecture)"
 
+echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
+
+# URL to the latest libcgal-dev
+if [[ "${DPKG_ARCH}" == "armhf" ]]; then
+  LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1_armhf.deb"
+elif [[ "${DPKG_ARCH}" == "amd64" ]]; then
+  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1_arm64.deb"
+fi
 
 if ! hash jq curl >/dev/null; then
   echo
@@ -147,28 +153,31 @@ echo
 
 [[ -d "./pkg2appimage" ]] || git clone https://github.com/AppImage/pkg2appimage 
 OLD_CWD="$(pwd)"
-cp ps.yml ./pkg2appimage 
-sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml  
-cd pkg2appimage || exit
-SYSTEM_ARCH="armhf" ./pkg2appimage ps.yml
-echo "Finished build process."
+for GTK_VERSION in 2 3; do
+  cp ps.yml ./pkg2appimage 
+  sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml 
+  sed -i "s#PLACEHOLDER_GTK_VERSION#${GTK_VERSION}#g" ./pkg2appimage/ps.yml 
 
-echo "Here's some information to help with generating and posting a release on GitHub:"
-
+  cd pkg2appimage || exit
+  SYSTEM_ARCH="${DPKG_ARCH}" ./pkg2appimage ps.yml
+  echo "Finished build process."
+  
+  echo "Here's some information to help with generating and posting a release on GitHub:"
+  
 cat <<EOF
-Tag: ${LATEST_VERSION}
------
-This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}).
-
-To use this AppImage, dependencies on the host are needed (Raspbian Buster):
-
-    \`\`\`sudo apt-get install -y ${DEPS_REQUIRED}\`\`\`
-
-After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage\`\`\` and run it.
------
+  Tag: ${LATEST_VERSION}
+  -----
+  This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}).
+  
+  To use this AppImage, dependencies on the host are needed (Raspbian Buster):
+  
+      \`\`\`sudo apt-get install -y ${DEPS_REQUIRED}\`\`\`
+  
+  After installation, \`\`\`chmod +x PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage\`\`\` and run it.
+  -----
 EOF
-
-cd "${OLD_CWD}" || exit
-mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage"
-echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-armhf.AppImage"
-
+  
+  cd "${OLD_CWD}" || exit
+  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-armhf.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-armhf.AppImage"
+  echo "The final build artifact is available at: pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-armhf.AppImage"
+done
