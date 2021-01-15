@@ -24,8 +24,12 @@ echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant
 # URL to the latest libcgal-dev
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1_armhf.deb"
-elif [[ "${DPKG_ARCH}" == "amd64" ]]; then
+elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
   LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1_arm64.deb"
+else
+  echo "Unknown architecture [arch: ${DPKG_ARCH}]. could not figure out which LIGCGAL library was needed."
+  echo "Please update the build assistant to add support!"
+  exit 1
 fi
 
 if ! hash jq curl >/dev/null; then
