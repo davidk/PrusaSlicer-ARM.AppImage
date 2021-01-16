@@ -4,8 +4,9 @@ union: true
 ingredients:
   dist: buster
   script:
-    - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
-    - cd PrusaSlicer-build && git fetch && git checkout -f VERSION_PLACEHOLDER && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 -DSLIC3R_GTK=PLACEHOLDER_GTK_VERSION && time make -j4
+#    - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer PrusaSlicer-build
+    - [ -d "PrusaSlicer-build" ] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch VERSION_PLACEHOLDER --depth 1 PrusaSlicer-build
+    - cd PrusaSlicer-build && mkdir -p rpi-build && cd rpi-build && cmake .. -DSLIC3R_WX_STABLE=1 -DSLIC3R_FHS=1 -DSLIC3R_GTK=PLACEHOLDER_GTK_VERSION && time make -j4
 script:
   # Workaround when using PrusaSlicer on X-over-SSH (and compiled with GTK3). Basic theme and icon sets.
   - mkdir -p ./usr/share/mime/packages && cp -a /usr/share/mime/packages/freedesktop.org.xml ./usr/share/mime/packages/
