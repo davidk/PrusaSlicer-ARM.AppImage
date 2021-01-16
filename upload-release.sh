@@ -1,7 +1,9 @@
 #!/bin/bash
 # upload-release.sh
-# This pushes a release file to GitHub. It requires a premade release where assets can be added
+# This pushes a release file to GitHub. It requires a premade release where assets can be added.
 # 
+# The .githubconfig file that is sourced from here has this format:
+#
 # ~/.config/.githubconfig:
 # token="[github personal access token: https://github.com/settings/tokens]"
 # release_id="[id of a release to upload to, found here: https://api.github.com/repos/yours/PrusaSlicer-ARM.AppImage/releases]"
