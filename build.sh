@@ -24,8 +24,8 @@ echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1_armhf.deb"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-  # appimagetool releases under aarch64, instead of arm64
-  DPKG_ARCH="aarch64"
+  # appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
+  APPIMAGE_ARCH="aarch64"
   LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1_arm64.deb"
 else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]. could not figure out which LIGCGAL library was needed."
@@ -164,7 +164,7 @@ for GTK_VERSION in 2 3; do
   sed -i "s#PLACEHOLDER_GTK_VERSION#${GTK_VERSION}#g" ./pkg2appimage/ps.yml 
 
   cd pkg2appimage || exit
-  SYSTEM_ARCH="${DPKG_ARCH}" ./pkg2appimage ps.yml
+  SYSTEM_ARCH="${APPIMAGE_ARCH}" ./pkg2appimage ps.yml
   echo "Finished build process."
   
   echo "Here's some information to help with generating and posting a release on GitHub:"
