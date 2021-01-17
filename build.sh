@@ -183,6 +183,6 @@ cat <<EOF
 EOF
   
   cd "${OLD_CWD}" || exit
-  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-${DPKG_ARCH}.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage"
+  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-${APPIMAGE_ARCH}.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage"
   echo "The final build artifact is available at: $(readlink -f ./pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage)"
 done
