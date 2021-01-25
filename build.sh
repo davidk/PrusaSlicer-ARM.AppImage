@@ -23,6 +23,7 @@ echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant
 
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1_armhf.deb"
+  APPIMAGE_ARCH="armhf"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
   # appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
   APPIMAGE_ARCH="aarch64"
