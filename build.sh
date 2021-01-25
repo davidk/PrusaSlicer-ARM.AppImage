@@ -22,12 +22,12 @@ DPKG_ARCH="$(dpkg --print-architecture)"
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
 
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-  LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1+b1_armhf.deb"
   APPIMAGE_ARCH="armhf"
+  LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-1+b1_armhf.deb"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
   # appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
   APPIMAGE_ARCH="aarch64"
-  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1_arm64.deb"
+  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1+b1_arm64.deb"
 else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]. could not figure out which LIGCGAL library was needed."
   echo "Please update the build assistant to add support!"
