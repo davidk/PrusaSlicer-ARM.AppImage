@@ -15,7 +15,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
 # Dependencies fed to apt for installation
-DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev libwxgtk3.0-dev"
+DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev"
 
 DPKG_ARCH="$(dpkg --print-architecture)"
 
@@ -159,13 +159,13 @@ echo
 
 [[ -d "./pkg2appimage" ]] || git clone https://github.com/AppImage/pkg2appimage 
 OLD_CWD="$(pwd)"
-for GTK_VERSION in 2 3; do
+for GTK_VERSION in 3; do
   cp ps.yml ./pkg2appimage 
   sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml 
   sed -i "s#PLACEHOLDER_GTK_VERSION#${GTK_VERSION}#g" ./pkg2appimage/ps.yml 
 
   cd pkg2appimage || exit
-  SYSTEM_ARCH="${APPIMAGE_ARCH}" ./pkg2appimage ps.yml
+  PATH="${OLD_CWD}:${PATH}" SYSTEM_ARCH="${APPIMAGE_ARCH}" ./pkg2appimage ps.yml
   echo "Finished build process."
   
   echo "Here's some information to help with generating and posting a release on GitHub:"
@@ -184,6 +184,6 @@ cat <<EOF
 EOF
   
   cd "${OLD_CWD}" || exit
-  mv "pkg2appimage/out/PrusaSlicer-.glibc2.28-${APPIMAGE_ARCH}.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage"
+  mv "pkg2appimage/out/PrusaSlicer-.glibc2.32-${APPIMAGE_ARCH}.AppImage" "pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage"
   echo "The final build artifact is available at: $(readlink -f ./pkg2appimage/out/PrusaSlicer-${LATEST_VERSION##version_}-GTK${GTK_VERSION}-${DPKG_ARCH}.AppImage)"
 done
