@@ -107,7 +107,7 @@ else
   echo
   echo "Installing package .."
   curl -sSL "${LIBCGAL_URL}" > "${PWD}/${LIBCGAL_URL##*/}"
-  if ! sudo dpkg -i "${PWD}/${LIBCGAL_URL##*/}"; then
+  if ! sudo dpkg -i -E "${PWD}/${LIBCGAL_URL##*/}"; then
     read -p "It looks like the installation failed. This is normal on a first attempt. May I run apt install -f to bring in missing dependencies? [N/y] " -n 1 -r
 
     if ! [[ $REPLY =~ ^[Yy]$ ]]
