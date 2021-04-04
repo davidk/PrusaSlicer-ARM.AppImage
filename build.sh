@@ -27,7 +27,7 @@ if [[ "${DPKG_ARCH}" == "armhf" ]]; then
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
   # appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
   APPIMAGE_ARCH="aarch64"
-  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-1+b1_arm64.deb"
+  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2.1-1_arm64.deb"
 else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]. could not figure out which LIGCGAL library was needed."
   echo "Please update the build assistant to add support!"
