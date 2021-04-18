@@ -10,19 +10,11 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[{*.patch,syntax_test_*}]
-trim_trailing_whitespace = false
-
-[{*.c,*.cpp,*.h}]
-charset = utf-8
-
-[{*.c,*.cpp,*.h,Makefile}]
-trim_trailing_whitespace = true
-insert_final_newline = true
-end_of_line = lf
-indent_style = space
-indent_size = 2
-
-[{*.py,*.conf,*.sublime-project}]
-indent_style = tab
-indent_size = 4
+[/pkg2appimage/**]
+indent_style = unset
+indent_size = unset
+tab_width = unset
+end_of_line = unset
+charset = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
