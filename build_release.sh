@@ -96,6 +96,12 @@ function buildPkg () {
   done
 }
 
+function postBuild () {
+  chmod +x pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/AppRun
+  chmod +x pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/usr/bin/prusa-slicer
+}
+
 installDeps
 fakeOsVersion
 buildPkg
+postBuild
