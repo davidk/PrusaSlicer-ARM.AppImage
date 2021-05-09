@@ -51,6 +51,16 @@ function installDeps () {
   apt install -f -y
 }
 
+function fakeOsVersion () {
+  cat <<EOF > uname
+#! /usr/bin/env bash
+echo "unknown"
+EOF
+
+chmod +x uname
+
+}
+
 function buildPkg () {
   if [[ "${DPKG_ARCH}" == "armhf" ]]; then
     export LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-3_armhf.deb"
@@ -87,4 +97,5 @@ function buildPkg () {
 }
 
 installDeps
+fakeOsVersion
 buildPkg
