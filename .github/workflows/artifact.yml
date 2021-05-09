@@ -24,24 +24,11 @@ jobs:
           DPKG_ARCH: "arm64"
           APPIMAGE_ARCH: "aarch64"
           ARCH: "aarch64"
-        run: docker run --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./build_release.sh
+        run: |
+          docker run --env LATEST_VERSION --env DPKG_ARCH --env APPIMAGE_ARCH --env ARCH --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./build_release.sh
       -
-        name: Upload Prusa artifact version 2.3.1 for ubuntu 21.04/arm64
+        name: Upload Prusa Slicer artifact version 2.3.1 for ubuntu 21.04/arm64
         uses: actions/upload-artifact@v2
         with:
           name: PrusaSlicer-2.3.1+ubuntu-21.04-arm64.tar.bz2
-          path: ${{ github.workspace }}/pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/*
-      -
-        name: Build Prusa Slicer for ubuntu 20.04/arm64
-        env:
-          LATEST_VERSION: "version_2.3.1"
-          DPKG_ARCH: "arm64"
-          APPIMAGE_ARCH: "aarch64"
-          ARCH: "aarch64"
-        run: docker run --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:20.04 ./build_release.sh
-      -
-        name: Upload Prusa artifact version 2.3.1 for ubuntu 20.04/arm64
-        uses: actions/upload-artifact@v2
-        with:
-          name: PrusaSlicer-2.3.1+ubuntu-20.04-arm64.tar.bz2
           path: ${{ github.workspace }}/pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/*
