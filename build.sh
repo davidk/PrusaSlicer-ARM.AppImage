@@ -10,27 +10,19 @@
 #   - jq
 #   - curl
 
+DPKG_ARCH="$(dpkg --print-architecture)"
+
+source "includes/$(lsb_release -cs)"
+source "includes/libcgal_${DPKG_ARCH}"
 
 # PrusaSlicer's GitHub API URL
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
-# Dependencies fed to apt for installation
-DEPS_REQUIRED="git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev libwxgtk3.0-dev"
-
-DPKG_ARCH="$(dpkg --print-architecture)"
-
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
-
-if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-  APPIMAGE_ARCH="armhf"
-  LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-3_armhf.deb"
-elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-  # appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
-  APPIMAGE_ARCH="aarch64"
-  LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-3_arm64.deb"
+if [[ -z "${LIBCGAL_URL}" || -z "${APPIMAGE_ARCH}" ]]; then
 else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]. could not figure out which LIGCGAL library was needed."
-  echo "Please update the build assistant to add support!"
+  echo "Please update the build assistant to add support or add a pointer to the right arch/libcgal version in 'includes/libcgal_${DPKG_ARCH}'!"
   exit 1
 fi
 
