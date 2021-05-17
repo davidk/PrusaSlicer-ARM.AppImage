@@ -1,0 +1,2 @@
+APPIMAGE_ARCH="armhf"
+LIBCGAL_URL="http://raspbian.raspberrypi.org/raspbian/pool/main/c/cgal/libcgal-dev_5.2-3_armhf.deb"
