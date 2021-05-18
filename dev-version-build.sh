@@ -9,6 +9,7 @@ fi
 
 DPKG_ARCH="$(dpkg --print-architecture)"
 GTK_VERSION="2"
+
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   APPIMAGE_ARCH="armhf"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
@@ -25,7 +26,6 @@ cp ps.yml ./pkg2appimage
 
 sed -i "s#VERSION_PLACEHOLDER#${LATEST_VERSION}#g" ./pkg2appimage/ps.yml
 sed -i "s#PLACEHOLDER_GTK_VERSION#${GTK_VERSION}#g" ./pkg2appimage/ps.yml 
-
 
 cd pkg2appimage || exit
 [[ -d "./PrusaSlicer" ]] && rm -rf ./PrusaSlicer
