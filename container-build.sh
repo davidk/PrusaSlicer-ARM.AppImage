@@ -95,7 +95,7 @@ EOF
 
 # Note, this relinks resources to be relative pathed instead of absolute since the inter-container path probably
 # differs from the path outside (if the container is run that way)
-${CONTAINER_BIN} run -v "${BUILD_PS_IN}":/home/slic3r/PrusaSlicer:Z -i --rm keyglitch/prusaslicer-compiler <<EOF
+time ${CONTAINER_BIN} run -v "${BUILD_PS_IN}":/home/slic3r/PrusaSlicer:Z -i --rm keyglitch/prusaslicer-compiler <<EOF
   cd /home/slic3r/PrusaSlicer \
   && cd deps && mkdir -p build && cd build \
   && cmake -G Ninja .. \
