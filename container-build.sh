@@ -1,5 +1,6 @@
 #!/bin/bash
-# Perform setup to build PrusaSlicer in a container
+# Fully build PrusaSlicer in a container
+# Utilizes podman/docker depending on which is installed on the host.
 
 # Git repository address where PrusaSlicer is located
 PS_GIT_REPO="https://github.com/prusa3d/PrusaSlicer"
@@ -33,15 +34,15 @@ fi
 
 # Detect whether or not we should use podman/docker, preferring podman if it is available
 CONTAINER_BIN="$(command -v docker)"
+CONTAINER_ARGS=""
 
 if hash podman 2>/dev/null; then
 	CONTAINER_BIN="$(command -v podman)"
-	echo "Using ${CONTAINER_BIN} for container operations. Doing '${CONTAINER_BIN} unshare chown 1000:1000 on ${BUILD_PS_IN}'"
-	${CONTAINER_BIN} unshare chown 1000:1000 -R "${BUILD_PS_IN}"
+	CONTAINER_ARGS="--userns=keep-id"
 fi
 
 echo "Init build container .."
-${CONTAINER_BIN} build -t keyglitch/prusaslicer-compiler - <<EOF
+${CONTAINER_BIN} build -t prusaslicer-compiler - <<EOF
 FROM debian:buster
 
 ENV TZ=UTC
@@ -95,7 +96,7 @@ EOF
 
 # Note, this relinks resources to be relative pathed instead of absolute since the inter-container path probably
 # differs from the path outside (if the container is run that way)
-time ${CONTAINER_BIN} run -v "${BUILD_PS_IN}":/home/slic3r/PrusaSlicer:Z -i --rm keyglitch/prusaslicer-compiler <<EOF
+time ${CONTAINER_BIN} run ${CONTAINER_ARGS} -v "${BUILD_PS_IN}":/home/slic3r/PrusaSlicer:Z -i --rm prusaslicer-compiler <<EOF
   cd /home/slic3r/PrusaSlicer \
   && cd deps && mkdir -p build && cd build \
   && cmake -G Ninja .. \
