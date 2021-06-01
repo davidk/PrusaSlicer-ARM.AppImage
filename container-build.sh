@@ -102,7 +102,7 @@ time ${CONTAINER_BIN} run ${CONTAINER_ARGS} -v "${BUILD_PS_IN}":/home/slic3r/Pru
   && cmake -G Ninja .. \
   && ninja \
   && cd ../.. && mkdir -p build && cd build \
-  && cmake .. -G Ninja -DCMAKE_PREFIX_PATH="/home/slic3r/PrusaSlicer/deps/build/destdir/usr/local" -DSLIC3R_STATIC=1 \
+  && cmake .. -G Ninja -DCMAKE_PREFIX_PATH="/home/slic3r/PrusaSlicer/deps/build/destdir/usr/local" -DSLIC3R_STATIC=1 -DCMAKE_INSTALL_PREFIX=/usr \
   && ninja \
   && rm -f resources \
   && ln -sr ../resources resources \
