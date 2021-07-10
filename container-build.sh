@@ -111,3 +111,40 @@ EOF
 
 echo "Build finished. prusa-slicer can be found in:"
 readlink -f PrusaSlicer/build/src/prusa-slicer
+
+# Bring in AppImage utilities and generate an AppImage
+${CONTAINER_BIN} build -t prusaslicer-appimage-generator - <<EOF
+FROM debian:buster
+
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y \
+  fuse \
+  libfuse-dev \
+  wget \
+  libglib2.0-0 \
+  file \
+  gpg \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get autoremove -y \
+  && apt-get autoclean
+
+RUN sed -i \
+  -e 's/^# \(cs_CZ\.UTF-8.*\)/\1/' \
+  -e 's/^# \(de_DE\.UTF-8.*\)/\1/' \
+  -e 's/^# \(en_US\.UTF-8.*\)/\1/' \
+  -e 's/^# \(es_ES\.UTF-8.*\)/\1/' \
+  -e 's/^# \(fr_FR\.UTF-8.*\)/\1/' \
+  -e 's/^# \(it_IT\.UTF-8.*\)/\1/' \
+  -e 's/^# \(ko_KR\.UTF-8.*\)/\1/' \
+  -e 's/^# \(pl_PL\.UTF-8.*\)/\1/' \
+  -e 's/^# \(uk_UA\.UTF-8.*\)/\1/' \
+  -e 's/^# \(zh_CN\.UTF-8.*\)/\1/' \
+  /etc/locale.gen \
+  && locale-gen
+
+RUN wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage" \
+  && chmod a+x ./appimagetool-aarch64.AppImage \
+  && ./appimagetool-aarch64.AppImage appImage.dir
+EOF
