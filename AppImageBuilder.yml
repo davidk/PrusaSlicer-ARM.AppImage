@@ -6,19 +6,22 @@ script: |
   cd PrusaSlicer/deps && \
   mkdir -p build && \
   cd build && \
-  cmake .. && \
+  CPWD=$(readlink -f .) && \
+  cmake .. -DDEP_WX_GTK3=ON && \
   make -j$(nproc) && \
   cd ../.. && \
   mkdir -p build && \
   cd build && \
-  cmake .. -DDEP_WX_GTK3=ON \
+  cmake .. \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
   -DSLIC3R_PCH=OFF \
   -DSLIC3R_STATIC=1 \
   -DSLIC3R_WX_STABLE=0 \
-  -DSLIC3R_GTK=2 && \
+  -DSLIC3R_GTK=3 && \
   DESTDIR=AppDir make -j$(nproc) install
+#  cmake -DDEP_WX_GTK3=ON .. && \
+#  -DCMAKE_PREFIX_PATH=${CPWD}/destdir/usr/local \
 
 AppDir:
   path: ./PrusaSlicer/build/AppDir
@@ -30,21 +33,34 @@ AppDir:
     icon: utilities-terminal
     version: version_2.4.0-beta1
     exec: usr/bin/prusa-slicer
-
+  runtime:
+    env:
+      #LD_PRELOAD: /usr/lib/aarch64-linux-gnu/libstdc++.so.6
+      APPDIR_LIBRARY_PATH: $APPDIR/usr/lib/aarch64-linux-gnu:$APPDIR/lib/aarch64-linux-gnu:$APPDIR/usr/lib:$APPDIR/usr/lib/gcc/aarch64-linux-gnu/
   apt:
     arch: arm64
     allow_unauthenticated: true
     sources:
-      - sourceline: 'deb [arch=arm64] http://deb.debian.org/debian buster main contrib non-free'
-      - sourceline: 'deb [arch=arm64] http://deb.debian.org/debian-security/ buster/updates main contrib non-free'
-      - sourceline: 'deb [arch=arm64] http://deb.debian.org/debian buster-updates main contrib non-free'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy main restricted'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-updates main restricted'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy main restricted'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-updates main restricted'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy universe'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-updates universe'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy multiverse'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-updates multiverse'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-backports main restricted universe multiverse'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-security main restricted'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-security universe'
+      - sourceline: 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ groovy-security multiverse'
 
     include:
-      - python
-      - bash 
+      - python3
+      - bash
+      - gcc-10
       - libgail-common
       - libatk-bridge2.0-0
-      - libcanberra-gtk-module
+      - libcanberra-gtk3-module
       - libgl1-mesa-dri
       - libcgal-dev
       - libboost-dev 
@@ -67,10 +83,13 @@ AppDir:
       - libdbus-1-dev 
       - libgtk2.0-dev 
       - libgtk-3-dev 
+      - libstdc++6
+      - libgmpxx4ldbl
+      - libnlopt-dev
+      - libdbus-1-dev 
+      - libgtk2.0-dev 
+      - libgtk-3-dev
       - libwxgtk3.0-gtk3-dev 
-      - libwxgtk3.0-dev
-      - mesa-utils 
-      - libgl1-mesa-glx
 
 AppImage: 
   update-information: None
