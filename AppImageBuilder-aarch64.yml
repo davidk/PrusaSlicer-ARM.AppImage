@@ -22,6 +22,7 @@ version: 1
 # Build PrusaSlicer from source before packaging
 # Also copy AppDir/usr/resources/icons/PrusaSlicer.svg to 
 # AppDir/usr/share/icons so that appimage-builder can find it
+
 script: |
   [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta1 --depth 1 PrusaSlicer 
   cd PrusaSlicer/deps && \
@@ -40,6 +41,7 @@ script: |
   -DSLIC3R_WX_STABLE=0 \
   -DSLIC3R_GTK=3 && \
   DESTDIR=AppDir make -j$(nproc) install && \
+  mkdir -p AppDir/usr/share/icons && \
   cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons/
 
 AppDir:
