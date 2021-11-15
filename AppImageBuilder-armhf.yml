@@ -41,6 +41,7 @@ script: |
   -DSLIC3R_WX_STABLE=0 \
   -DSLIC3R_GTK=3 && \
   DESTDIR=AppDir make -j$(nproc) install && \
+  mkdir -p AppDir/usr/share/icons && \
   cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons/
 
 AppDir:
@@ -65,6 +66,7 @@ AppDir:
       - sourceline: 'deb [arch=armhf] http://deb.debian.org/debian bullseye-updates main contrib non-free'
       - sourceline: 'deb [arch=armhf] http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi'
     include:
+      - bash
       - dash
       - coreutils
       - libatk-bridge2.0-0
