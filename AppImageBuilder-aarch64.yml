@@ -93,6 +93,8 @@ AppDir:
       - libpcre3:arm64
       - libselinux1:arm64
       - zlib1g:arm64
+      - librsvg2-common
+      - libgl1
   files:
     include:
       - /lib/aarch64-linux-gnu/libGLX.so.0

@@ -95,6 +95,9 @@ AppDir:
       - libpcre3
       - libselinux1
       - zlib1g
+      - librsvg2-common
+      - libgl1
+
   files:
     include:
       - /lib/arm-linux-gnueabihf/libGLX.so.0
