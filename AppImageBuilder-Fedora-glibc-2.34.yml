@@ -1,0 +1,53 @@
+#!/bin/bash
+# appimage-builder for Fedora/updated glibcs
+# System dependencies for building (Fedora 35, aarch64)
+#
+# $ sudo dnf install python3-pip python3-setuptools patchelf desktop-file-utils gdk-pixbuf2-devel.aarch64 fakeroot strace fuse
+# $ sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
+# $ sudo pip3 install appimage-builder
+# $ sudo dnf install -y git cmake CGAL-devel boost-devel boost-regex boost-filesystem boost-thread boost-log boost-locale boost-iostreams libcurl pkgconf-pkg-config libbtbb cereal-devel eigen3-devel NLopt-devel systemd-devel openvdb-devel ImageMagick file make automake gcc gcc-c++ tbb-devel libcurl-devel libtvdb-devel openvdb ilmbase-devel dpkg expat-devel glew-devel ninja-build openssl-devel perl-FindBin libXext-devel gtk2-devel gtk3-devel 
+# $ sudo dnf groupinstall "Development Tools" "Development Libraries"
+# $ appimage-builder
+version: 1
+
+script: |
+  [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta1 --depth 1 PrusaSlicer
+  sed -i 's/a1e145a083d173cf320c0bd8522c7ee5829052b49b68fe5268ac84f0c576b940/21ed12eb5c215b00999f0374af652be0a6f785df10d18d0dfec8d81ed4abaea3/g' PrusaSlicer/deps/wxWidgets/wxWidgets.cmake && \
+  cd PrusaSlicer/deps && \
+  mkdir -p build && \
+  cd build && \
+  cmake .. -DDEP_WX_GTK3=ON && \
+  make -j$(nproc) && \
+  cd ../.. && \
+  mkdir -p build && \
+  cd build && \
+  cmake .. \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
+  -DSLIC3R_PCH=OFF \
+  -DSLIC3R_STATIC=1 \
+  -DSLIC3R_WX_STABLE=0 \
+  -DSLIC3R_GTK=3 && \
+  DESTDIR=AppDir make -j$(nproc) install && \
+  mkdir -p AppDir/usr/share/icons && \
+  cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons/
+
+AppDir:
+  path: ./PrusaSlicer/build/AppDir
+  app_info:
+    id: com.prusa3d.PrusaSlicer
+    name: PrusaSlicer
+    icon: PrusaSlicer
+    version: version_2.4.0-beta1
+    exec: usr/bin/prusa-slicer
+    exec_args: $@
+  files:
+    exclude:
+    - usr/share/man
+    - usr/share/doc/*/README.*
+    - usr/share/doc/*/changelog.*
+    - usr/share/doc/*/NEWS.*
+    - usr/share/doc/*/TODO.*
+AppImage:
+  arch: aarch64
+  update-information: guess
