@@ -29,6 +29,7 @@ script: |
   cd ../.. && \
   mkdir -p build && \
   cd build && \
+  rm -rf AppDir && \
   cmake .. \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
@@ -36,10 +37,13 @@ script: |
   -DSLIC3R_STATIC=1 \
   -DSLIC3R_WX_STABLE=0 \
   -DSLIC3R_GTK=3 && \
-  DESTDIR=AppDir make -j$(nproc) install
+  DESTDIR=AppDir make -j$(nproc) install && \
+  tar -cvzf ./PrusaSlicer.AppDir-$(date +%F_%H-%M_%p).tar.gz ./AppDir && \
+  mkdir -p AppDir/usr/share/icons && \
+  cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
 
 AppDir:
-  path: ./PruasSlicer/build/AppDir
+  path: ./PrusaSlicer/build/AppDir
   app_info:
     id: com.prusa3d.PrusaSlicer
     name: PrusaSlicer
@@ -84,6 +88,10 @@ AppDir:
   files:
     include:
     - /lib/aarch64-linux-gnu/libstdc++.so.6
+    - /lib/aarch64-linux-gnu/libpthread.so.0
+    - /lib/aarch64-linux-gnu/libm.so.6
+    - /usr/lib/aarch64-linux-gnu/libstdc++.so.6
+    - /lib/aarch64-linux-gnu/libc.so.6
     exclude:
     - usr/share/man
     - usr/share/doc/*/README.*
