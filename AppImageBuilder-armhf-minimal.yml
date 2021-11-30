@@ -18,6 +18,7 @@
 version: 1
 script: |
   [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta2 --depth 1 PrusaSlicer && \
+  sed -i 's/21ed12eb5c215b00999f0374af652be0a6f785df10d18d0dfec8d81ed4abaea3/ed36a2159c781cce07b06378664e683ebd8cb2f51914aba9acd3bfca3d63d7d3/g' PrusaSlicer/deps/wxWidgets/wxWidgets.cmake && \
   sed -i '8 i #include <boost/nowide/convert.hpp>' PrusaSlicer/src/slic3r/Utils/OctoPrint.cpp && \
   cd PrusaSlicer/deps && \
   mkdir -p build && \
