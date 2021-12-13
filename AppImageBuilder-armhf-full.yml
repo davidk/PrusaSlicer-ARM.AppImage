@@ -1,0 +1,169 @@
+# System dependencies for building (Raspberry Pi OS 11 armhf):
+#
+# *** First boot after installation ***
+# ** Run through the 1st boot prompts in GUI **
+# sudo apt update && sudo apt upgrade -y
+# sudo reboot
+#
+# *** Building an AppImage ***
+# sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen
+# sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-armhf.AppImage -O /usr/local/bin/appimagetool
+# sudo chmod +x /usr/local/bin/appimagetool
+# sudo pip3 install appimage-builder
+# screen
+# git clone https://github.com/prusa3d/PrusaSlicer
+# sed -i 's/a1e145a083d173cf320c0bd8522c7ee5829052b49b68fe5268ac84f0c576b940/21ed12eb5c215b00999f0374af652be0a6f785df10d18d0dfec8d81ed4abaea3/g' PrusaSlicer/deps/wxWidgets/wxWidgets.cmake
+# appimage-builder --recipe AppImageBuilder-armhf.yml
+
+
+version: 1
+
+# Build PrusaSlicer from source before packaging
+# Also copy AppDir/usr/resources/icons/PrusaSlicer.svg to 
+# AppDir/usr/share/icons so that appimage-builder can find it
+
+script: |
+  [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta3 --depth 1 PrusaSlicer && \
+  cd PrusaSlicer/deps && \
+  mkdir -p build && \
+  cd build && \
+  cmake .. -DDEP_WX_GTK3=ON && \
+  make -j$(nproc) && \
+  cd ../.. && \
+  mkdir -p build && \
+  cd build && \
+  cmake .. \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
+  -DSLIC3R_PCH=OFF \
+  -DSLIC3R_STATIC=1 \
+  -DSLIC3R_WX_STABLE=0 \
+  -DSLIC3R_GTK=3 && \
+  DESTDIR=AppDir make -j$(nproc) install && \
+  mkdir -p AppDir/usr/share/icons && \
+  cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons/
+
+AppDir:
+  path: ./PrusaSlicer/build/AppDir
+  app_info:
+    id: com.prusa3d.PrusaSlicer
+    name: PrusaSlicer
+    icon: PrusaSlicer
+    version: version_2.4.0-beta3
+    exec: usr/bin/prusa-slicer
+  runtime:
+    path_mappings:
+      - $APPDIR/usr/include/X11/dri:$APPDIR/usr/lib/arm-linux-gnueabihf/dri
+    env:
+      APPDIR_LIBRARY_PATH: '$APPDIR/usr/lib/arm-linux-gnueabihf:$APPDIR/lib/arm-linux-gnueabihf:$APPDIR/usr/lib:$APPDIR/usr/lib/gcc/arm-linux-gnueabihf:$APPDIR/usr/lib/arm-linux-gnueabihf/gdk-pixbuf-2.0/2.10.0/loaders.cache:$APPDIR/usr/lib/arm-linux-gnueabihf/gdk-pixbuf-2.0/2.10.0/loaders/'
+  apt:
+    arch: armhf
+    allow_unauthenticated: true
+    sources:
+      - sourceline: 'deb [arch=armhf] http://deb.debian.org/debian bullseye main contrib non-free'
+      - sourceline: 'deb [arch=armhf] http://security.debian.org/debian-security bullseye-security main contrib non-free'
+      - sourceline: 'deb [arch=armhf] http://deb.debian.org/debian bullseye-updates main contrib non-free'
+      - sourceline: 'deb [arch=armhf] http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi'
+    include:
+      - bash
+      - dash
+      - coreutils
+      - libatk-bridge2.0-0
+      - libcanberra-gtk3-module
+      - libcurl4-openssl-dev
+      - libdbus-1-dev 
+      - libgail-common
+      - libgdk-pixbuf-2.0-0
+      - libgl1-mesa-dri
+      - libgtk-3-dev 
+      - libx11-6
+      - libglx0
+      - libglvnd0
+      - libstdc++6
+      - libudev-dev 
+      - libwxgtk3.0-gtk3-dev 
+      - packagekit-gtk3-module
+      - libtinfo6
+      - python-is-python3
+      - shared-mime-info
+      - libdbus-1-3
+      - libexpat1
+      - libgcc-s1
+      - libgpg-error0
+      - liblzma5
+      - libpcre3
+      - libselinux1
+      - zlib1g
+      - librsvg2-common
+      - libgl1
+
+  files:
+    include:
+      - /lib/arm-linux-gnueabihf/libGLX.so.0
+      - /lib/arm-linux-gnueabihf/libGLdispatch.so.0
+      - /lib/arm-linux-gnueabihf/libX11.so.6
+      - /lib/arm-linux-gnueabihf/libXau.so.6
+      - /lib/arm-linux-gnueabihf/libXcomposite.so.1
+      - /lib/arm-linux-gnueabihf/libXcursor.so.1
+      - /lib/arm-linux-gnueabihf/libXdamage.so.1
+      - /lib/arm-linux-gnueabihf/libXdmcp.so.6
+      - /lib/arm-linux-gnueabihf/libXext.so.6
+      - /lib/arm-linux-gnueabihf/libXfixes.so.3
+      - /lib/arm-linux-gnueabihf/libXi.so.6
+      - /lib/arm-linux-gnueabihf/libXinerama.so.1
+      - /lib/arm-linux-gnueabihf/libXrandr.so.2
+      - /lib/arm-linux-gnueabihf/libXrender.so.1
+      - /lib/arm-linux-gnueabihf/libatk-1.0.so.0
+      - /lib/arm-linux-gnueabihf/libatk-bridge-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libatspi.so.0
+      - /lib/arm-linux-gnueabihf/libblkid.so.1
+      - /lib/arm-linux-gnueabihf/libbrotlicommon.so.1
+      - /lib/arm-linux-gnueabihf/libbrotlidec.so.1
+      - /lib/arm-linux-gnueabihf/libbsd.so.0
+      - /lib/arm-linux-gnueabihf/libcairo-gobject.so.2
+      - /lib/arm-linux-gnueabihf/libcairo.so.2
+      - /lib/arm-linux-gnueabihf/libdatrie.so.1
+      - /lib/arm-linux-gnueabihf/libepoxy.so.0
+      - /lib/arm-linux-gnueabihf/libffi.so.7
+      - /lib/arm-linux-gnueabihf/libfontconfig.so.1
+      - /lib/arm-linux-gnueabihf/libfreetype.so.6
+      - /lib/arm-linux-gnueabihf/libfribidi.so.0
+      - /lib/arm-linux-gnueabihf/libgcrypt.so.20
+      - /lib/arm-linux-gnueabihf/libgdk-3.so.0
+      - /lib/arm-linux-gnueabihf/libgdk_pixbuf-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libgio-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libglib-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libgmodule-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libgobject-2.0.so.0
+      - /lib/arm-linux-gnueabihf/libgraphite2.so.3
+      - /lib/arm-linux-gnueabihf/libgtk-3.so.0
+      - /lib/arm-linux-gnueabihf/libharfbuzz.so.0
+      - /lib/arm-linux-gnueabihf/liblz4.so.1
+      - /lib/arm-linux-gnueabihf/libmd.so.0
+      - /lib/arm-linux-gnueabihf/libmount.so.1
+      - /lib/arm-linux-gnueabihf/libpango-1.0.so.0
+      - /lib/arm-linux-gnueabihf/libpangocairo-1.0.so.0
+      - /lib/arm-linux-gnueabihf/libpangoft2-1.0.so.0
+      - /lib/arm-linux-gnueabihf/libpcre2-8.so.0
+      - /lib/arm-linux-gnueabihf/libpixman-1.so.0
+      - /lib/arm-linux-gnueabihf/libpng16.so.16
+      - /lib/arm-linux-gnueabihf/libstdc++.so.6
+      - /lib/arm-linux-gnueabihf/libsystemd.so.0
+      - /lib/arm-linux-gnueabihf/libthai.so.0
+      - /lib/arm-linux-gnueabihf/libuuid.so.1
+      - /lib/arm-linux-gnueabihf/libwayland-client.so.0
+      - /lib/arm-linux-gnueabihf/libwayland-cursor.so.0
+      - /lib/arm-linux-gnueabihf/libwayland-egl.so.1
+      - /lib/arm-linux-gnueabihf/libxkbcommon.so.0
+      - /lib/arm-linux-gnueabihf/libzstd.so.1
+      - /usr/lib/locale/locale-archive
+    exclude:
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
+AppImage: 
+  update-information: None
+  sign-key: None
+  arch: armhf
