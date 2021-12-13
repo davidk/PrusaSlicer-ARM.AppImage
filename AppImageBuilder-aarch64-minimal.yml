@@ -18,7 +18,7 @@
 version: 1
 
 script: |
-  [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta3 --depth 1 PrusaSlicer && \
+  [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch version_2.4.0-beta4 --depth 1 PrusaSlicer && \
   cd PrusaSlicer/deps && \
   mkdir -p build && \
   cd build && \
@@ -46,7 +46,7 @@ AppDir:
     id: com.prusa3d.PrusaSlicer
     name: PrusaSlicer
     icon: PrusaSlicer
-    version: version_2.4.0-beta3
+    version: version_2.4.0-beta4
     exec: usr/bin/prusa-slicer
     exec_args: $@
   apt:
