@@ -1,34 +1,34 @@
-name: artifact-build
-
-on:
-  push:
-
-jobs:
-  build-artifact:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Code checkout
-        uses: actions/checkout@v2
-      -
-        name: Set up QEMU for arm64
-        id: qemu
-        uses: docker/setup-qemu-action@v1
-        with:
-          image: tonistiigi/binfmt:latest
-          platforms: linux/arm64
-      -
-        name: Build Prusa Slicer for ubuntu 21.04/arm64
-        env:
-          LATEST_VERSION: "version_2.3.1"
-          DPKG_ARCH: "arm64"
-          APPIMAGE_ARCH: "aarch64"
-          ARCH: "aarch64"
-        run: |
-          docker run --env LATEST_VERSION --env DPKG_ARCH --env APPIMAGE_ARCH --env ARCH --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./build_release.sh
-      -
-        name: Upload Prusa Slicer artifact version 2.3.1 for ubuntu 21.04/arm64
-        uses: actions/upload-artifact@v2
-        with:
-          name: PrusaSlicer-2.3.1+ubuntu-21.04-arm64.tar.bz2
-          path: ${{ github.workspace }}/pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/*
+#name: artifact-build
+#
+#on:
+#  push:
+#
+#jobs:
+#  build-artifact:
+#    runs-on: ubuntu-latest
+#    steps:
+#      -
+#        name: Code checkout
+#        uses: actions/checkout@v2
+#      -
+#        name: Set up QEMU for arm64
+#        id: qemu
+#        uses: docker/setup-qemu-action@v1
+#        with:
+#          image: tonistiigi/binfmt:latest
+#          platforms: linux/arm64
+#      -
+#        name: Build Prusa Slicer for ubuntu 21.04/arm64
+#        env:
+#          LATEST_VERSION: "version_2.3.1"
+#          DPKG_ARCH: "arm64"
+#          APPIMAGE_ARCH: "aarch64"
+#          ARCH: "aarch64"
+#        run: |
+#          docker run --env LATEST_VERSION --env DPKG_ARCH --env APPIMAGE_ARCH --env ARCH --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./build_release.sh
+#      -
+#        name: Upload Prusa Slicer artifact version 2.3.1 for ubuntu 21.04/arm64
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: PrusaSlicer-2.3.1+ubuntu-21.04-arm64.tar.bz2
+#          path: ${{ github.workspace }}/pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/*
