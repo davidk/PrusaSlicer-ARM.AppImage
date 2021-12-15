@@ -9,19 +9,38 @@ PrusaSlicer packaged in an ARM AppImage for the Raspberry Pi 4. Build utilities 
 # About the AppImage format
 
 An AppImage bundles built software into a single executable file, making its use as simple as downloading and running. This particular AppImage does
-not fulfill the entire intent of the format (dependencies need to be installed on the host), but it allows for PrusaSlicer to be more easily 
+not fulfill the entire intent of the format (some dependencies need to be installed on the host), but it allows for PrusaSlicer to be more easily 
 used, removed and upgraded by an end user.
 
 # Building your own AppImage
 
 Requirement: Raspberry Pi 4 (or better).
 
-If for any reason you would like to build your own ARM AppImage, all the files needed for doing so are in this repository. Clone or download this repository and run `./build.sh` in the root of the repository. 
+If for any reason you would like to build your own ARM AppImage, all the files needed for doing so are in this repository. Clone or download this repository, choose your arch (aarch64/armhf) and follow the instructions in the header of `AppImageBuilder-$ARCH-minimal.yml` to build an AppImage similar to the ones provided here.
 
-This will install dependencies for building, compile PrusaSlicer, and drop a AppImage into `PrusaSlicer-ARM.AppImage/pkg2appimage/out`.
+# Building on Raspberry Pi OS 11 (aarch64)
 
-Copy the AppImage into a good location and run it.
+- Run through first boot setup
 
-# Needs to be implemented (contributions welcome)
+- Install dependencies for appimage-builder (N.B. screen is optional):
 
-- [ ] More dependency bundling with pkg2appimage
+    sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen
+
+- Install appimagetool into a location in your $PATH
+
+    sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
+
+- Make appimagetool executable
+
+    sudo chmod +x /usr/local/bin/appimagetool
+
+- Install appimage-builder
+
+    sudo pip3 install appimage-builder
+
+- Run the build:
+
+    screen
+    appimage-builder --recipe AppImageBuilder-aarch64.yml
+
+When the build finishes, an AppImage will be present in the same directory as the .yml file.
