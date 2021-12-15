@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-if [[ $1 == "-i" ]]; then
-echo "unknown"
-elif [[ $1 == "-m" ]]; then
-echo "aarch64"
-else
-echo "aarch64"
-fi

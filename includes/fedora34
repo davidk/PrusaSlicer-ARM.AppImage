@@ -1,3 +1,0 @@
-#  wxGTK-devel wxBase
-# sudo dnf groupinstall "Development Tools" "Development Libraries"
-DEPS_REQUIRED="git cmake CGAL-devel boost-devel boost-regex boost-filesystem boost-thread boost-log boost-locale boost-iostreams libcurl pkgconf-pkg-config libbtbb cereal-devel eigen3-devel NLopt-devel systemd-devel openvdb-devel ImageMagick  file desktop-file-utils make automake gcc gcc-c++ tbb-devel libcurl-devel libtvdb-devel openvdb ilmbase-devel dpkg expat-devel glew-devel ninja-build openssl-devel perl-FindBin libXext-devel gtk2-devel gtk3-devel fuse"

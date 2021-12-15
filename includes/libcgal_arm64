@@ -1,3 +1,0 @@
-# appimagetool releases are named aarch64, instead of arm64 (arm64 is currently synonymous with aarch64)
-export APPIMAGE_ARCH="aarch64"
-export LIBCGAL_URL="http://ftp.debian.org/debian/pool/main/c/cgal/libcgal-dev_5.2-3_arm64.deb"
