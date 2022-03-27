@@ -20,27 +20,27 @@ If for any reason you would like to build your own ARM AppImage, all the files n
 
 # Building on Raspberry Pi OS (aarch64)
 
-- Run through first boot setup
+1. Run through first boot setup
 
-- Install dependencies for appimage-builder (N.B. screen is optional):
+2. Install dependencies for appimage-builder (N.B. screen is optional):
 
         sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools \
         patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen
 
-- Install appimagetool into a location in your $PATH
+3. Install appimagetool into a location in your $PATH
 
         sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage \
         -O /usr/local/bin/appimagetool
 
-- Make appimagetool executable
+4. Make appimagetool executable
 
         sudo chmod +x /usr/local/bin/appimagetool
 
-- Install appimage-builder
+5. Install appimage-builder
 
         sudo pip3 install appimage-builder
 
-- Run the build:
+6. Run the build:
 
         screen
         appimage-builder --recipe AppImageBuilder-aarch64.yml
