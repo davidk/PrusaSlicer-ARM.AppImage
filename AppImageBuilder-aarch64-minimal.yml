@@ -21,19 +21,21 @@ script: |
   mkdir -p build && \
   cd build && \
   cmake .. -DDEP_WX_GTK3=ON && \
-  make -j$(nproc) && \
+  cmake --build . && \
   cd ../.. && \
   mkdir -p build && \
   cd build && \
   rm -rf AppDir && \
   cmake .. \
+  -GNinja \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
   -DSLIC3R_PCH=OFF \
   -DSLIC3R_STATIC=1 \
   -DSLIC3R_WX_STABLE=0 \
-  -DSLIC3R_GTK=3 && \
-  DESTDIR=AppDir make -j$(nproc) install && \
+  -DSLIC3R_GTK=3 \
+  -DCMAKE_BUILD_TYPE=Release && \
+  DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
   tar -cvzf ./PrusaSlicer.AppDir-$(date +%F_%H-%M_%p).tar.gz ./AppDir && \
   mkdir -p AppDir/usr/share/icons && \
   cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
