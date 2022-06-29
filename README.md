@@ -43,6 +43,6 @@ If for any reason you would like to build your own ARM AppImage, all the files n
 6. Run the build:
 
         screen
-        appimage-builder --recipe AppImageBuilder-aarch64.yml
+        ./build.sh
 
 When the build finishes, an AppImage will be present in the same directory as the .yml file.
