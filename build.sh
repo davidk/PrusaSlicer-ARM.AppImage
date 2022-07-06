@@ -136,6 +136,7 @@ echo "Finished build process."
 echo "Here's some information to help with generating and posting a release on GitHub:"
   
 cat <<EOF
+Title: PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
 Tag: ${LATEST_VERSION}
 -----
 _Prusa Research has officially begun releasing their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds going forward._
