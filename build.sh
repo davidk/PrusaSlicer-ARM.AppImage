@@ -20,7 +20,7 @@ DPKG_ARCH="$(dpkg --print-architecture)"
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
 
 if [[ -v $STY ]] || [[ -z $STY ]]; then
-  echo "The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions."
+  echo "**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****"
 fi
 
 
