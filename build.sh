@@ -126,10 +126,10 @@ echo
 echo "Removing previous ./PrusaSlicer build directory if any .."
 
 echo "Building for ${APPIMAGE_ARCH} .."
-cp -f AppImageBuilder-${APPIMAGE_ARCH}-minimal.yml AppImageBuilder-${APPIMAGE_ARCH}-minimal-${LATEST_VERSION}.yml
-sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-minimal-${LATEST_VERSION}.yml
-appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-minimal-${LATEST_VERSION}.yml
-rm -f AppImageBuilder-${APPIMAGE_ARCH}-minimal-${LATEST_VERSION}.yml
+cp -f AppImageBuilder-${APPIMAGE_ARCH}-full.yml AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
+sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
+appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
+rm -f AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
 
 echo "Finished build process."
 
