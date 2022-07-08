@@ -90,6 +90,21 @@ else
   echo "I'll be building PrusaSlicer using ${LATEST_VERSION}"
 fi
 
+read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). The (f)ull version is the default, but building with the (m)inimal version is also possible. Please select a version (f)ull [default] or (m)inimal? " -r
+
+case $REPLY in
+  m|minimal)
+    APPIMAGE_BUILD_TYPE="minimal"
+    ;;
+  *)
+    APPIMAGE_BUILD_TYPE="full"
+    ;;
+esac
+
+echo
+echo "AppImageBuilder will use the ${APPIMAGE_BUILD_TYPE} version for $(uname -m)"
+echo
+
 echo
 echo '**********************************************************************************'
 echo '* This utility needs your consent to install the following packages for building *'
