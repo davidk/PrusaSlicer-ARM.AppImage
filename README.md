@@ -16,7 +16,7 @@ used, removed and upgraded by an end user.
 
 Recommended: Raspberry Pi 4 (or better) with at least 8GB RAM
 
-If for any reason you would like to build your own ARM AppImage, all the files needed for doing so are in this repository. Clone or download this repository, choose your arch (aarch64/armhf) and follow the instructions in the header of `AppImageBuilder-$ARCH-minimal.yml` to build an AppImage similar to the ones provided here. Alternatively, run `./build.sh` (and follow the prompts) to have this done for you.
+If for any reason you would like to build your own ARM AppImage, all the files needed for doing so are in this repository. Clone or download this repository, choose your arch (aarch64/armhf) and follow the instructions in the header of the `AppImageBuilder-$ARCH-$TYPE.yml` to build an AppImage similar to the ones provided here. Alternatively, run `./build.sh` (and follow the prompts) to have this done for you.
 
 # Building on Raspberry Pi OS (aarch64)
 
