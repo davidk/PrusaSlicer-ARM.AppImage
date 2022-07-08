@@ -141,12 +141,12 @@ echo
 echo "Removing previous ./PrusaSlicer build directory if any .."
 
 echo "Building for ${APPIMAGE_ARCH} .."
-cp -f AppImageBuilder-${APPIMAGE_ARCH}-full.yml AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
-sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
-appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
-rm -f AppImageBuilder-${APPIMAGE_ARCH}-full-${LATEST_VERSION}.yml
+cp -f AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}.yml AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
+sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
+appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
+rm -f AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
 
-echo "Finished build process."
+echo "Finished build process for PrusaSlicer and arch $(uname -m)."
 
 echo "Here's some information to help with generating and posting a release on GitHub:"
   
