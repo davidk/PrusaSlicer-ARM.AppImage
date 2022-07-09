@@ -52,7 +52,7 @@ AppDir:
     id: com.prusa3d.PrusaSlicer
     name: PrusaSlicer
     icon: PrusaSlicer
-    version: %%VERSION%%
+    version: %%VERSION%%-minimal
     exec: usr/bin/prusa-slicer
   apt:
     arch:
