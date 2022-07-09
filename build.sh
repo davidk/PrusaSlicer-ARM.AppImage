@@ -90,6 +90,7 @@ else
   echo "I'll be building PrusaSlicer using ${LATEST_VERSION}"
 fi
 
+echo
 read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). The (f)ull version is the default, but building with the (m)inimal version is also possible. Please select a version (f)ull [default] or (m)inimal? " -r
 
 case $REPLY in
