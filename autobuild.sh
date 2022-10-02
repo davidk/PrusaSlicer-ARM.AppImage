@@ -29,20 +29,16 @@ else
   exit 1
 fi
 
-if ! hash jq curl wget >/dev/null; then
-  if ! apt-get install -y curl jq; then
-    echo "Unable to install curl/jq. The error output might have some answers as to what went wrong (above)."
-    exit 1
-  fi
+if ! apt-get install -y curl jq wget; then
+  echo "Unable to install curl/jq/wget. The error output might have some answers as to what went wrong (above)."
+  exit 1
 fi
 
-# Install appimage-builder if not present
-if ! hash appimage-builder >/dev/null; then
-  wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool
-  chmod +x /usr/local/bin/appimagetool
-  apt-get -y install python3-pip
-  pip3 install appimage-builder
-fi
+# Install appimage-builder
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool
+chmod +x /usr/local/bin/appimagetool
+apt-get -y install python3-pip
+pip3 install appimage-builder
 
 # Grab the latest upstream release version number
 LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r '.tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
