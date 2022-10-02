@@ -26,4 +26,5 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
           chmod +x /usr/local/bin/appimagetool
           pip3 install appimage-builder
+          chmod +x ./autobuild.sh
           ./autobuild.sh
