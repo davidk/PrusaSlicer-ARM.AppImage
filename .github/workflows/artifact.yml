@@ -21,6 +21,7 @@ jobs:
          APPIMAGE_ARCH: "aarch64"
          ARCH: "aarch64"
        run: |
+         chmod +x ./autobuild.sh
          docker run --env DPKG_ARCH --env APPIMAGE_ARCH --env ARCH --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./autobuild.sh
 
       #  name: Upload Prusa Slicer artifact version 2.3.1 for ubuntu 21.04/arm64
