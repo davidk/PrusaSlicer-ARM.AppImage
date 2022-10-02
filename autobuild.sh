@@ -40,6 +40,7 @@ fi
 if ! hash appimage-builder >/dev/null; then
   wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool
   chmod +x /usr/local/bin/appimagetool
+  apt-get -y install python3-pip
   pip3 install appimage-builder
 fi
 
