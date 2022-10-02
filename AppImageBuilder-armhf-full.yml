@@ -41,7 +41,7 @@ script: |
   -DSLIC3R_GTK=3 \
   -DSLIC3R_BUILD_TESTS=OFF \
   -DCMAKE_BUILD_TYPE=Release && \
-  DESTDIR=AppDir cmake --build ./ --target install -j 2 && \
+  DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
   tar -cvzf ./PrusaSlicer.AppDir-$(date +%F_%H-%M_%p).tar.gz ./AppDir && \
   mkdir -p AppDir/usr/share/icons && \
   cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
