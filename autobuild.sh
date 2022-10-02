@@ -17,6 +17,8 @@ DPKG_ARCH="$(dpkg --print-architecture)"
 
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
 
+apt-get update
+
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   APPIMAGE_ARCH="armhf"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
