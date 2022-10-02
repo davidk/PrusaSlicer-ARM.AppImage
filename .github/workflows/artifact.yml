@@ -16,6 +16,9 @@ jobs:
        with:
         image_additional_mb: 16384
         base_image: raspi_4_bullseye:20220121
+        cpu_info: raspberrypi_4b
+        cpu: cortex-a7
+        copy_artifact_path: "*.AppImage"
         commands: |
           apt-get update
           apt-get install -y wget
