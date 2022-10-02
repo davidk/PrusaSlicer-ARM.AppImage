@@ -33,7 +33,7 @@ else
 fi
 
 if ! hash jq curl >/dev/null; then
-  if ! sudo apt-get install -y curl jq; then
+  if ! apt-get install -y curl jq; then
     echo "Unable to install curl/jq. The error output might have some answers as to what went wrong (above)."
     exit 1
   fi
@@ -78,7 +78,7 @@ done
 
 echo "---"
 
-if ! sudo apt-get install -y ${DEPS_REQUIRED}; then
+if ! apt-get install -y ${DEPS_REQUIRED}; then
   echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
   exit 1
 fi
