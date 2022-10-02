@@ -4,30 +4,30 @@ on:
  push:
 
 jobs:
- build:
+ build-artifact:
    runs-on: ubuntu-latest
    steps:
      -
        name: Code checkout
        uses: actions/checkout@v2
      -
-       uses: pguyot/arm-runner-action@v2
-       id: build_image
+       name: Set up QEMU for arm64
+       id: qemu
+       uses: docker/setup-qemu-action@v1
        with:
-        image_additional_mb: 16384
-        base_image: raspi_4_bullseye:20220121
-        cpu_info: cpuinfo/raspberrypi_4b
-        cpu: cortex-a7
-        copy_artifact_path: "*.AppImage"
-        commands: |
-          apt-get update
-          apt-get install -y wget
-          wget https://raw.githubusercontent.com/apache/flink/02d30ace69dc18555a5085eccf70ee884e73a16e/tools/azure-pipelines/free_disk_space.sh
-          chmod +x free_disk_space.sh
-          ./free_disk_space.sh
-          apt-get install -y git libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build
-          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
-          chmod +x /usr/local/bin/appimagetool
-          pip3 install appimage-builder
-          chmod +x ./autobuild.sh
-          ./autobuild.sh
+         image: tonistiigi/binfmt:latest
+         platforms: linux/arm64
+     -
+       name: Build Prusa Slicer for ubuntu 21.04/arm64
+       env:
+         DPKG_ARCH: "arm64"
+         APPIMAGE_ARCH: "aarch64"
+         ARCH: "aarch64"
+       run: |
+         docker run --env DPKG_ARCH --env APPIMAGE_ARCH --env ARCH --platform linux/arm64 -v "$(pwd)":/app --workdir=/app ubuntu:21.04 ./autobuild.sh
+     -
+      #  name: Upload Prusa Slicer artifact version 2.3.1 for ubuntu 21.04/arm64
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: PrusaSlicer-2.3.1+ubuntu-21.04-arm64.tar.bz2
+      #    path: ${{ github.workspace }}/pkg2appimage/PrusaSlicer/PrusaSlicer.AppDir/*

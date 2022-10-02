@@ -13,14 +13,9 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest
 
 # Dependencies for installation
 DEPS_REQUIRED="libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build"
-
 DPKG_ARCH="$(dpkg --print-architecture)"
 
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
-
-if [[ -v $STY ]] || [[ -z $STY ]]; then
-  echo "**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****"
-fi
 
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   APPIMAGE_ARCH="armhf"
@@ -32,11 +27,18 @@ else
   exit 1
 fi
 
-if ! hash jq curl >/dev/null; then
+if ! hash jq curl wget >/dev/null; then
   if ! apt-get install -y curl jq; then
     echo "Unable to install curl/jq. The error output might have some answers as to what went wrong (above)."
     exit 1
   fi
+fi
+
+# Install appimage-builder if not present
+if ! hash appimage-builder >/dev/null; then
+  wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool
+  chmod +x /usr/local/bin/appimagetool
+  pip3 install appimage-builder
 fi
 
 # Grab the latest upstream release version number
