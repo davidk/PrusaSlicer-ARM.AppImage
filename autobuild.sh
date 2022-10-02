@@ -8,6 +8,9 @@
 # - OS: Raspberry Pi OS
 # - System: Raspberry Pi 4 (ideally 8GB RAM for building PrusaSlicer; 4GB with SSD swap if needed) 
 #
+
+set +x
+
 # PrusaSlicer's GitHub API URL
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
