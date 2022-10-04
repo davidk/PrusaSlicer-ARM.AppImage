@@ -94,7 +94,7 @@ echo
 uname -a
 uname -m
 apt-get -y install python3-pip
-pip3 install appimage-builder --platform ${APPIMAGE_ARCH}
+pip3 install appimage-builder --platform ${APPIMAGE_ARCH} --only-binary=:all:
 
 echo
 echo "Dependencies installed. Proceeding with installation .."
