@@ -82,10 +82,19 @@ if ! apt-get install -y ${DEPS_REQUIRED}; then
 fi
 
 # Install appimage-builder
+echo
+echo "Installing AppimageTool for ${APPIMAGE_ARCH}"
+echo
 wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool
 chmod +x /usr/local/bin/appimagetool
+
+echo
+echo "Installing appimage-builder using pip3"
+echo
+uname -a
+uname -m
 apt-get -y install python3-pip
-pip3 install appimage-builder
+pip3 install appimage-builder --platform ${APPIMAGE_ARCH}
 
 echo
 echo "Dependencies installed. Proceeding with installation .."
