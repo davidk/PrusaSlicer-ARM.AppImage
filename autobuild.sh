@@ -93,7 +93,7 @@ echo "Installing appimage-builder using pip3"
 echo
 uname -a
 uname -m
-apt-get -y install python3-pip
+apt-get -y install python3-pip python3-dev build-essential
 pip3 install appimage-builder --platform ${APPIMAGE_ARCH} --only-binary=:all:
 
 echo
