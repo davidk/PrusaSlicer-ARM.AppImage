@@ -101,7 +101,7 @@ case $REPLY in
     APPIMAGE_BUILD_TYPE="full"
     ;;
   *)
-    APPIMAGE_BUILD_TYPE="all"
+    APPIMAGE_BUILD_TYPE="minimal full"
     ;;
 esac
 
@@ -166,14 +166,17 @@ cmake .. \
 -DSLIC3R_GTK=3 \
 -DCMAKE_BUILD_TYPE=Release && \
 DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
-tar -cvzf ./PrusaSlicer.AppDir-$(date +%F_%H-%M_%p).tar.gz ./AppDir && \
 mkdir -p AppDir/usr/share/icons && \
-cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
+cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons && \
+tar -cvzf ./PrusaSlicer.AppDir.tar.gz ./AppDir
 
-cp -f AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}.yml AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
-sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
-appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
-rm -f AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
+for build_type in ${APPIMAGE_BUILD_TYPE}; do
+  rm -rf ./AppDir && tar -xvf ./PrusaSlicer.AppDir.tar.gz
+  cp -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  rm -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+done
 
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
 
