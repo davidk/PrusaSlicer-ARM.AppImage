@@ -91,19 +91,22 @@ else
 fi
 
 echo
-read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). The (f)ull version is the default, but building with the (m)inimal version is also possible. Please select a version (f)ull [default] or (m)inimal? " -r
+read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). The (f)ull version is the default, but building with the (m)inimal version is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
 
 case $REPLY in
   m|minimal)
     APPIMAGE_BUILD_TYPE="minimal"
     ;;
-  *)
+  f|full)
     APPIMAGE_BUILD_TYPE="full"
+    ;;
+  *)
+    APPIMAGE_BUILD_TYPE="all"
     ;;
 esac
 
 echo
-echo "AppImageBuilder will use the ${APPIMAGE_BUILD_TYPE} version for $(uname -m)"
+echo "Generating ${APPIMAGE_BUILD_TYPE} build(s) for $(uname -m)"
 echo
 
 echo
@@ -142,6 +145,31 @@ echo
 echo "Removing previous ./PrusaSlicer build directory if any .."
 
 echo "Building for ${APPIMAGE_ARCH} .."
+
+[[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch ${LATEST_VERSION} --depth 1 PrusaSlicer && \
+cd PrusaSlicer/deps && \
+mkdir -p build && \
+cd build && \
+cmake .. -DDEP_WX_GTK3=ON && \
+cmake --build . && \
+cd ../.. && \
+mkdir -p build && \
+cd build && \
+rm -rf AppDir && \
+cmake .. \
+-GNinja \
+-DCMAKE_INSTALL_PREFIX=/usr \
+-DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
+-DSLIC3R_PCH=OFF \
+-DSLIC3R_STATIC=ON \
+-DSLIC3R_WX_STABLE=OFF \
+-DSLIC3R_GTK=3 \
+-DCMAKE_BUILD_TYPE=Release && \
+DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
+tar -cvzf ./PrusaSlicer.AppDir-$(date +%F_%H-%M_%p).tar.gz ./AppDir && \
+mkdir -p AppDir/usr/share/icons && \
+cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
+
 cp -f AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}.yml AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
 sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
 appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-${APPIMAGE_BUILD_TYPE}-${LATEST_VERSION}.yml
