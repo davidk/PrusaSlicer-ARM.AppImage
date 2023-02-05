@@ -5,6 +5,12 @@
 #
 version: 1
 
+script: |
+  cd ./PrusaSlicer/build
+  DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
+  mkdir -p AppDir/usr/share/icons && \
+  cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons
+
 AppDir:
   path: ./PrusaSlicer/build/AppDir
   app_info:
