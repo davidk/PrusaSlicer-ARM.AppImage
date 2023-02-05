@@ -13,7 +13,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
 # Dependencies for installation
-DEPS_REQUIRED="libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build"
+DEPS_REQUIRED="libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync"
 
 DPKG_ARCH="$(dpkg --print-architecture)"
 
@@ -23,7 +23,6 @@ if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo "**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****"
 fi
 
-
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   APPIMAGE_ARCH="armhf"
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
@@ -32,6 +31,28 @@ else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]."
   echo "Please update the build assistant to add support."
   exit 1
+fi
+
+if ! hash appimage-builder >/dev/null; then
+  echo
+  read -p "appimage-builder and appimage-tool are not installed. They are required for the build process. May I install them? [N/y] " -n 1 -r
+  if ! [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    echo "Ok. Exiting here."
+    exit 1
+  else
+    echo
+    echo "Thanks, i'll get both installed .. "
+    if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
+      echo "Unable to download appimagetool for ${APPIMAGE_ARCH}."
+    else
+      sudo chmod +x /usr/local/bin/appimagetool
+      echo "Installing appimage-builder .."
+      if ! sudo pip3 install appimage-builder; then
+        echo "Unable to install appimage-builder using pip3 .."
+      fi
+    fi 
+  fi 
 fi
 
 if ! hash jq curl >/dev/null; then
@@ -142,8 +163,6 @@ echo
 echo "Dependencies installed. Proceeding with installation .."
 echo
 
-echo "Removing previous ./PrusaSlicer build directory if any .."
-
 echo "Building for ${APPIMAGE_ARCH} .."
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch ${LATEST_VERSION} --depth 1 PrusaSlicer && \
@@ -165,17 +184,19 @@ cmake .. \
 -DSLIC3R_WX_STABLE=OFF \
 -DSLIC3R_GTK=3 \
 -DCMAKE_BUILD_TYPE=Release && \
-DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
-mkdir -p AppDir/usr/share/icons && \
-cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons && \
-tar -cvzf ./PrusaSlicer.AppDir.tar.gz ./AppDir
+#DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
+#mkdir -p AppDir/usr/share/icons && \
+#cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons && \
+#tar -cvzf ./PrusaSlicer.AppDir.tar.gz ./AppDir
+
+cd ../..
 
 for build_type in ${APPIMAGE_BUILD_TYPE}; do
-  rm -rf ./AppDir && tar -xvf ./PrusaSlicer.AppDir.tar.gz
   cp -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
-  appimage-builder --recipe AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
   rm -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  mv ./PrusaSlicer/build/*.AppImage ./
 done
 
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
