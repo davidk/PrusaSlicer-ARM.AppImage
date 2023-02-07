@@ -168,7 +168,7 @@ else
   sleep 5
 fi
 
-if ! sudo apt-get install -y ${DEPS_REQUIRED}; then
+if ! sudo apt-get install -y "${DEPS_REQUIRED}"; then
   echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
   exit 1
 fi
@@ -179,7 +179,7 @@ echo
 
 echo "Building for ${APPIMAGE_ARCH} .."
 
-[[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch ${LATEST_VERSION} --depth 1 PrusaSlicer && \
+[[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
 cd PrusaSlicer/deps && \
 mkdir -p build && \
 cd build && \
@@ -192,7 +192,7 @@ rm -rf AppDir && \
 cmake .. \
 -GNinja \
 -DCMAKE_INSTALL_PREFIX=/usr \
--DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
+-DCMAKE_PREFIX_PATH="$(pwd)/../deps/build/destdir/usr/local" \
 -DSLIC3R_PCH=OFF \
 -DSLIC3R_STATIC=ON \
 -DSLIC3R_WX_STABLE=OFF \
@@ -202,10 +202,10 @@ cmake .. \
 cd ../..
 
 for build_type in ${APPIMAGE_BUILD_TYPE}; do
-  cp -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
-  sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
-  appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
-  rm -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
+  cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
 done
 
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
