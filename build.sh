@@ -13,7 +13,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
 
 # Dependencies for installation
-DEPS_REQUIRED="libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync"
+DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
 
 DPKG_ARCH="$(dpkg --print-architecture)"
 
