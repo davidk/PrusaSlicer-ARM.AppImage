@@ -149,7 +149,7 @@ echo '**************************************************************************
 echo '* This utility needs your consent to install the following packages for building *'
 echo '**********************************************************************************'
 
-for dep in $DEPS_REQUIRED; do
+for dep in "${DEPS_REQUIRED[@]}"; do
   echo "$dep"
 done
 
@@ -168,7 +168,7 @@ else
   sleep 5
 fi
 
-if ! sudo apt-get install -y "${DEPS_REQUIRED}"; then
+if ! sudo apt-get install -y "${DEPS_REQUIRED[@]}"; then
   echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
   exit 1
 fi
@@ -204,7 +204,12 @@ cd ../..
 for build_type in ${APPIMAGE_BUILD_TYPE}; do
   cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-  appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
+    # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
+    appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  else
+    appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+  fi
   rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
 done
 
