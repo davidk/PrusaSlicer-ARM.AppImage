@@ -44,13 +44,27 @@ if ! hash appimage-builder >/dev/null; then
     echo
     echo "Thanks, i'll get both installed .. "
     if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
-      echo "Unable to download appimagetool for ${APPIMAGE_ARCH}."
+      echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
+      exit 1
     else
+
       sudo chmod +x /usr/local/bin/appimagetool
-      echo "Installing appimage-builder .."
-      if ! sudo pip3 install appimage-builder; then
-        echo "Unable to install appimage-builder using pip3 .."
+      
+      # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImage properly.
+      echo "Installing older version of appimage-builder .."
+
+      if [[ "${DPKG_ARCH}" == "armhf" ]]; then
+        if ! sudo pip3 install appimage-builder==0.9.2; then
+	  echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
+	  exit 1
+        fi
+      elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
+        if ! sudo pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+          echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+	  exit 1
+        fi
       fi
+
     fi 
   fi 
 fi
@@ -183,11 +197,7 @@ cmake .. \
 -DSLIC3R_STATIC=ON \
 -DSLIC3R_WX_STABLE=OFF \
 -DSLIC3R_GTK=3 \
--DCMAKE_BUILD_TYPE=Release && \
-#DESTDIR=AppDir cmake --build ./ --target install -j $(nproc) && \
-#mkdir -p AppDir/usr/share/icons && \
-#cp AppDir/usr/resources/icons/PrusaSlicer.svg ./AppDir/usr/share/icons && \
-#tar -cvzf ./PrusaSlicer.AppDir.tar.gz ./AppDir
+-DCMAKE_BUILD_TYPE=Release
 
 cd ../..
 
@@ -196,7 +206,6 @@ for build_type in ${APPIMAGE_BUILD_TYPE}; do
   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
   appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
   rm -f AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml
-  mv ./PrusaSlicer/build/*.AppImage ./
 done
 
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
