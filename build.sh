@@ -10,7 +10,7 @@
 #
 
 # PrusaSlicer's GitHub API URL
-LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest"
+LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for installation
 DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
@@ -99,7 +99,7 @@ else
 fi
 
 # Grab the latest upstream release version number
-LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r '.tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
+LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r 'first | .tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
 
 read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
 if [[ "${REPLY}" != "" ]]
