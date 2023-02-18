@@ -51,7 +51,7 @@ if ! hash appimage-builder >/dev/null; then
       sudo chmod +x /usr/local/bin/appimagetool
       
       # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImage properly.
-      echo "Installing older version of appimage-builder .."
+      echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
 
       if [[ "${DPKG_ARCH}" == "armhf" ]]; then
         if ! sudo pip3 install appimage-builder==0.9.2; then
@@ -126,7 +126,7 @@ else
 fi
 
 echo
-read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). The (f)ull version is the default, but building with the (m)inimal version is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
+read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
 
 case $REPLY in
   m|minimal)
