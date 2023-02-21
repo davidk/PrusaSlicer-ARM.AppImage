@@ -13,7 +13,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for installation
-DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
+DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-dev python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
 
 DPKG_ARCH="$(dpkg --print-architecture)"
 
@@ -32,6 +32,36 @@ else
   echo "Please update the build assistant to add support."
   exit 1
 fi
+
+echo
+echo '**********************************************************************************'
+echo '* This utility needs your consent to install the following packages for building *'
+echo '**********************************************************************************'
+
+for dep in "${DEPS_REQUIRED[@]}"; do
+  echo "$dep"
+done
+
+echo "---"
+
+read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
+if ! [[ $REPLY =~ ^[Yy]$ ]]
+then
+  echo "$REPLY"
+  echo "Ok. Exiting here."
+  exit 1
+else
+  echo 
+fi
+
+if ! sudo apt-get install -y "${DEPS_REQUIRED[@]}"; then
+  echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
+  exit 1
+fi
+
+echo
+echo "Dependencies installed. Proceeding with installation .."
+echo
 
 if ! hash appimage-builder >/dev/null; then
   echo
@@ -54,12 +84,12 @@ if ! hash appimage-builder >/dev/null; then
       echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
 
       if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-        if ! sudo pip3 install appimage-builder==0.9.2; then
+        if ! pip3 install appimage-builder==0.9.2; then
 	  echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
 	  exit 1
         fi
       elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-        if ! sudo pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+        if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
           echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
 	  exit 1
         fi
@@ -142,39 +172,6 @@ esac
 
 echo
 echo "Generating ${APPIMAGE_BUILD_TYPE} build(s) for $(uname -m)"
-echo
-
-echo
-echo '**********************************************************************************'
-echo '* This utility needs your consent to install the following packages for building *'
-echo '**********************************************************************************'
-
-for dep in "${DEPS_REQUIRED[@]}"; do
-  echo "$dep"
-done
-
-echo "---"
-
-read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
-if ! [[ $REPLY =~ ^[Yy]$ ]]
-then
-  echo "$REPLY"
-  echo "Ok. Exiting here."
-  exit 1
-else
-  echo
-  echo "Thanks! The build process should no longer need assistance."
-  echo "Feel free to step away for a break (continuing after 5 seconds) ..."
-  sleep 5
-fi
-
-if ! sudo apt-get install -y "${DEPS_REQUIRED[@]}"; then
-  echo "Unable to run 'apt-get install' to install dependencies. Were there any errors displayed above?"
-  exit 1
-fi
-
-echo
-echo "Dependencies installed. Proceeding with installation .."
 echo
 
 echo "Building for ${APPIMAGE_ARCH} .."
