@@ -15,13 +15,13 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 # Dependencies for installation
 DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-dev python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
 
-DPKG_ARCH="$(dpkg --print-architecture)"
-
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
 
 if [[ -v $STY ]] || [[ -z $STY ]]; then
-  echo "**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****"
+  echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
 fi
+
+DPKG_ARCH="$(dpkg --print-architecture)"
 
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   APPIMAGE_ARCH="armhf"
