@@ -62,6 +62,7 @@ AppDir:
     - /usr/lib/aarch64-linux-gnu/libstdc++.so.6
     - /lib/aarch64-linux-gnu/libc.so.6
     exclude:
+    - lib/aarch64-linux-gnu/libmali.so.1
     - usr/share/man
     - usr/share/doc/*/README.*
     - usr/share/doc/*/changelog.*
