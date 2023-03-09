@@ -73,30 +73,37 @@ if ! hash appimage-builder >/dev/null; then
   else
     echo
     echo "Thanks, i'll get both installed .. "
+
     if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
       echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
       exit 1
     else
-
       sudo chmod +x /usr/local/bin/appimagetool
-      
+    fi
+
+    if [[ "${DPKG_ARCH}" == "armhf" ]]; then
       # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImage properly.
       echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
 
-      if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-        if ! pip3 install appimage-builder==0.9.2; then
-	  echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
-	  exit 1
-        fi
-      elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-        if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-          echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
-	  exit 1
-        fi
+      if ! pip3 install appimage-builder==0.9.2; then
+        echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
+        exit 1
       fi
+    elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
+      if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+        echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+        exit 1
+      fi
+    fi
 
-    fi 
-  fi 
+    if ! hash appimage-builder >/dev/null; then
+      echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
+      echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
+      echo 'ERROR: hint (to add the path, $HOME/.local/bin to $PATH temporarily): export PATH="$PATH:$HOME/.local/bin"'
+      echo "ERROR: Re-run ./$0 if using the above hints"
+      exit 1
+    fi
+  fi
 fi
 
 if ! hash jq curl >/dev/null; then
