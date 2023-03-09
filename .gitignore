@@ -1,7 +1,8 @@
-pkg2appimage/
-
-# Some pkg downloaded
-*.deb
+# Ignore build files/assets
+PrusaSlicer/
+appimage-build/
+*.AppImage
+*.zsync
 
 # Vim
 *.swp
