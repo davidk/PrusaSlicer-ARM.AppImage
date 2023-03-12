@@ -178,10 +178,8 @@ case $REPLY in
 esac
 
 echo
-echo "Generating ${APPIMAGE_BUILD_TYPE} build(s) for $(uname -m)"
+echo "Generating [${APPIMAGE_BUILD_TYPE}] build(s) for ${APPIMAGE_ARCH}"
 echo
-
-echo "Building for ${APPIMAGE_ARCH} .."
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
 cd PrusaSlicer/deps && \
