@@ -19,6 +19,10 @@ if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
 fi
 
+if [[ $1 == "automated" ]]; then
+  AUTO="yes"
+fi
+
 DPKG_ARCH="$(dpkg --print-architecture)"
 
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
@@ -44,7 +48,12 @@ done
 
 echo "---"
 
-read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
+fi
+
 if ! [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo "$REPLY"
@@ -65,7 +74,13 @@ echo
 
 if ! hash appimage-builder >/dev/null; then
   echo
-  read -p "appimage-builder and appimage-tool are not installed. They are required for the build process. May I install them? [N/y] " -n 1 -r
+
+  if [[ -v AUTO ]]; then
+    REPLY="y"
+  else
+    read -p "appimage-builder and appimage-tool are not installed. They are required for the build process. May I install them? [N/y] " -n 1 -r
+  fi
+
   if ! [[ $REPLY =~ ^[Yy]$ ]]
   then
     echo "Ok. Exiting here."
@@ -108,7 +123,13 @@ fi
 
 if ! hash jq curl >/dev/null; then
   echo
-  read -p "It looks like jq or curl are not installed. To get the latest version of PrusaSlicer, I need to install jq (to parse JSON output) and curl (to get information from GitHub). May I install these? [N/y] " -n 1 -r
+
+  if [[ -v AUTO ]]; then
+    REPLY="y"
+  else
+    read -p "It looks like jq or curl are not installed. To get the latest version of PrusaSlicer, I need to install jq (to parse JSON output) and curl (to get information from GitHub). May I install these? [N/y] " -n 1 -r
+  fi
+
   if ! [[ $REPLY =~ ^[Yy]$ ]]
   then
     echo "Ok. Exiting here."
@@ -123,7 +144,12 @@ if ! hash jq curl >/dev/null; then
   fi
 fi
 
-read -p "May I use 'curl' and 'jq' to check for the latest PrusaSlicer version name? [N/y] " -n 1 -r
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -p "May I use 'curl' and 'jq' to check for the latest PrusaSlicer version name? [N/y] " -n 1 -r
+fi
+
 if ! [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo
@@ -138,7 +164,12 @@ fi
 # Grab the latest upstream release version number
 LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r 'first | .tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
 
-read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
+fi
+
 if [[ "${REPLY}" != "" ]]
 then
   echo
@@ -163,7 +194,11 @@ else
 fi
 
 echo
-read -n1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -n 1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
+fi
 
 case $REPLY in
   m|minimal)
