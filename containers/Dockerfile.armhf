@@ -4,7 +4,7 @@
 # Usage (replace podman for docker as needed): 
 # $ git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage
 # $ podman build -t psbuilder . 
-# $ time podman run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z
+# $ time podman run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z psbuilder
 # AppImage files should be written to your directory
 FROM docker.io/balenalib/raspberrypi3
 
