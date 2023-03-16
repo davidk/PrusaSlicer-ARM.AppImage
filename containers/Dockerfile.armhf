@@ -1,0 +1,15 @@
+# Dockerfile for automated, contained builds. 
+# Requires the installation of Docker or Podman.
+#
+# Usage (replace podman for docker as needed): 
+# $ git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage
+# $ podman build -t psbuilder . 
+# $ time podman run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z
+# AppImage files should be written to your directory
+FROM docker.io/balenalib/raspberrypi3
+
+RUN apt-get update && apt-get install -y wget git file
+
+WORKDIR /ps
+
+CMD ["./build.sh","automated"]
