@@ -13,6 +13,8 @@ else
   exit 1
 fi
 
+cp ../build.sh ./
+
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
   ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
@@ -22,6 +24,8 @@ else
   echo "Unknown architecture [arch: ${DPKG_ARCH}]."
   exit 1
 fi
+
+rm -f ./build.sh
 
 cd ../
 
