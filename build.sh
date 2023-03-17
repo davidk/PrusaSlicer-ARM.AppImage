@@ -21,6 +21,9 @@ fi
 
 if [[ $1 == "automated" ]]; then
   AUTO="yes"
+elif [[ $1 == "dependencies" ]]; then
+  AUTO="yes"
+  DEPS_ONLY="yes"
 fi
 
 DPKG_ARCH="$(dpkg --print-architecture)"
@@ -142,6 +145,11 @@ if ! hash jq curl >/dev/null; then
       exit 1
     fi
   fi
+fi
+
+if [[ -v DEPS_ONLY ]]; then
+  echo "Dependencies have completed installation, exiting here."
+  exit 0
 fi
 
 if [[ -v AUTO ]]; then
