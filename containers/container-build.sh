@@ -1,12 +1,24 @@
 #!/bin/bash
-
+# container-build
+#
+# This utility is designed to be used on an aarch64 build machine with a container
+# runtime to enable builds with fewer effects on a host system (needing to install 
+# build-specific packages, etc).
+#
+# Note: Resource constraints may make building armhf/aarch64 concurrently on an aarch64
+# system impossible.
+#
+# Usage: ./container-build.sh 
+#
+# Test system: Radxa Rock 5B + native NVMe storage, optioned w/16GB RAM
+#
 DPKG_ARCH="$(dpkg --print-architecture)"
 
 if hash podman; then
-  echo "Podman container tooling installed."
+  echo "Detected Podman container runtime."
   RUNTIME="podman"
 elif hash docker; then
-  echo "Docker container tooling installed."
+  echo "Detected lDocker container runtime."
   RUNTIME="docker"
 else 
   echo "Please install podman or docker container tooling on this system to proceed."
@@ -30,23 +42,41 @@ rm -f ./build.sh
 cd ../
 
 if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z psbuilder-armhf; } |& tee -a containers/armhf-build.log
+  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v "${PWD}:/ps:z" psbuilder-armhf; } |& tee -a containers/armhf-build.log
   mv PrusaSlicer PrusaSlicer-armhf
 elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
 
+  CURNAME=$(basename "$(pwd)")
+  echo "Base directory is ${CURNAME}. Creating ${CURNAME}-armhf and ${CURNAME}-aarch64 for concurrent builds .."
+  cd ../
+
+  echo "Creating/copying ${CURNAME}-armhf / aarch64 .."
+  rsync -aW "${CURNAME}/" "${CURNAME}-armhf/" &
+  rsync -aW "${CURNAME}/" "${CURNAME}-aarch64/" &
+
+  wait
+
+  # aarch64 
+
+  cd "${CURNAME}-aarch64" || exit
   if [[ -d "PrusaSlicer-aarch64" ]]; then
     mv PrusaSlicer-aarch64 PrusaSlicer
   fi
 
-  { time ${RUNTIME} run -it -v $PWD:/ps:z psbuilder-aarch64; } |& tee -a containers/aarch64-build.log
-  mv PrusaSlicer PrusaSlicer-aarch64
+  { time ${RUNTIME} run -it -v "${PWD}:/ps:z psbuilder-aarch64" |& tee -a containers/aarch64-build.log && mv PrusaSlicer PrusaSlicer-aarch64; }& 
 
+  # armhf
+
+  cd "../${CURNAME}-armhf" || exit
   if [[ -d "PrusaSlicer-armhf" ]]; then
     mv PrusaSlicer-armhf PrusaSlicer
   fi
 
-  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z psbuilder-armhf; } |& tee -a containers/armhf-build.log
-  mv PrusaSlicer PrusaSlicer-armhf
+  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v "${PWD}:/ps:z" psbuilder-armhf |& tee -a containers/armhf-build.log && mv PrusaSlicer PrusaSlicer-armhf; }& 
+
+  cd ../
+
+  wait
 
 else 
   echo "Unable to build."
