@@ -63,7 +63,7 @@ elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
     mv PrusaSlicer-aarch64 PrusaSlicer
   fi
 
-  { time ${RUNTIME} run -it -v "${PWD}:/ps:z psbuilder-aarch64" |& tee -a containers/aarch64-build.log && mv PrusaSlicer PrusaSlicer-aarch64; }& 
+  { time ${RUNTIME} run -it -v "${PWD}:/ps:z" psbuilder-aarch64 |& tee -a containers/aarch64-build.log && mv PrusaSlicer PrusaSlicer-aarch64; }& 
 
   # armhf
 
