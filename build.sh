@@ -13,7 +13,9 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for installation
-DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip python3-dev python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
+DEPS_REQUIRED=(libgl1-mesa-dev libglu1-mesa-dev build-essential cmake python3-pip \
+	python3-dev python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev \
+	fakeroot strace fuse libgtk-3-dev m4 zstd screen ninja-build squashfs-tools zsync)
 
 if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
@@ -57,13 +59,10 @@ else
   read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
 fi
 
-if ! [[ $REPLY =~ ^[Yy]$ ]]
-then
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "$REPLY"
   echo "Ok. Exiting here."
   exit 1
-else
-  echo 
 fi
 
 if ! sudo apt-get install -y "${DEPS_REQUIRED[@]}"; then
@@ -84,43 +83,42 @@ if ! hash appimage-builder >/dev/null; then
     read -p "appimage-builder and appimage-tool are not installed. They are required for the build process. May I install them? [N/y] " -n 1 -r
   fi
 
-  if ! [[ $REPLY =~ ^[Yy]$ ]]
-  then
+  if ! [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Ok. Exiting here."
     exit 1
-  else
-    echo
-    echo "Thanks, i'll get both installed .. "
+  fi
 
-    if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
-      echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
-      exit 1
-    else
-      sudo chmod +x /usr/local/bin/appimagetool
-    fi
+  echo
+  echo "Thanks, i'll get both installed .. "
 
-    if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-      # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImage properly.
-      echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
+  if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
+    echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
+    exit 1
+  fi
 
-      if ! pip3 install appimage-builder==0.9.2; then
-        echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
-        exit 1
-      fi
-    elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-      if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-        echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
-        exit 1
-      fi
-    fi
+  sudo chmod +x /usr/local/bin/appimagetool
 
-    if ! hash appimage-builder >/dev/null; then
-      echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
-      echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
-      echo 'ERROR: hint (to add the path, $HOME/.local/bin to $PATH temporarily): export PATH="$PATH:$HOME/.local/bin"'
-      echo "ERROR: Re-run ./$0 if using the above hints"
+  if [[ "${DPKG_ARCH}" == "armhf" ]]; then
+    # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
+    echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
+
+    if ! pip3 install appimage-builder==0.9.2; then
+      echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
       exit 1
     fi
+  elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
+    if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+      echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+      exit 1
+    fi
+  fi
+
+  if ! hash appimage-builder >/dev/null; then
+    echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
+    echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
+    echo 'ERROR: hint (to add the path, $HOME/.local/bin to $PATH temporarily): export PATH="$PATH:$HOME/.local/bin"'
+    echo "ERROR: Re-run ./$0 if using the above hints"
+    exit 1
   fi
 fi
 
@@ -133,8 +131,7 @@ if ! hash jq curl >/dev/null; then
     read -p "It looks like jq or curl are not installed. To get the latest version of PrusaSlicer, I need to install jq (to parse JSON output) and curl (to get information from GitHub). May I install these? [N/y] " -n 1 -r
   fi
 
-  if ! [[ $REPLY =~ ^[Yy]$ ]]
-  then
+  if ! [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Ok. Exiting here."
     exit 1
   else
@@ -158,8 +155,7 @@ else
   read -p "May I use 'curl' and 'jq' to check for the latest PrusaSlicer version name? [N/y] " -n 1 -r
 fi
 
-if ! [[ $REPLY =~ ^[Yy]$ ]]
-then
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then
   echo
   echo "Ok. Exiting here."
   exit 1
@@ -178,8 +174,7 @@ else
   read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
 fi
 
-if [[ "${REPLY}" != "" ]]
-then
+if [[ "${REPLY}" != "" ]]; then
   echo
   echo "Version will be set to ${REPLY}"
   LATEST_VERSION="${REPLY}"
