@@ -13,6 +13,33 @@
 #
 # Test system: Radxa Rock 5B + native NVMe storage, optioned w/16GB RAM
 #
+
+REPO="https://github.com/davidk/PrusaSlicer-ARM.AppImage"
+BUILD_AARCH64=""
+BUILD_ARMHF=""
+
+# determine build parameters
+case $1 in
+  "aarch64")
+    BUILD_AARCH64="yes"
+    unset BUILD_ARMHF
+  ;;
+  "armhf")
+    BUILD_ARMHF="yes"
+    unset BUILD_AARCH64
+  ;;
+  "all")
+    BUILD_AARCH64="yes"
+    BUILD_ARMHF="yes"
+  ;;
+  *)
+    echo "Options: [ aarch64 | armhf | all ]"
+    echo "Example: $0 aarch64"
+    exit 1
+  ;;
+esac
+
+# detect platform architecture 
 DPKG_ARCH="$(dpkg --print-architecture)"
 
 if hash podman; then
@@ -28,71 +55,35 @@ fi
 
 cp ../build.sh ./
 
-if [[ "${DPKG_ARCH}" == "armhf" ]]; then
+if [[ -v BUILD_AARCH64 ]]; then
+  echo "Generating builder images for aarch64.."
+  ${RUNTIME} build -t psbuilder-aarch64 -f Dockerfile.aarch64 .
+fi
+
+if [[ -v BUILD_ARMHF ]]; then
   echo "Generating builder images for armhf .."
   ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
-elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-  echo "Generating builder images for armhf and aarch64.."
-  ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
-
-  ${RUNTIME} build -t psbuilder-aarch64 -f Dockerfile.aarch64 .
-else
-  echo "Unknown architecture [arch: ${DPKG_ARCH}]."
-  exit 1
 fi
 
 rm -f ./build.sh
 cd ../
 
-if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-
-  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v "${PWD}:/ps:z" psbuilder-armhf |& tee -a containers/armhf-build.log; }
-  mv PrusaSlicer PrusaSlicer-armhf
-
-elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-
-  CURNAME=$(basename "$(pwd)")
-
-  echo "Base directory is ${CURNAME}. Creating ${CURNAME}-armhf and ${CURNAME}-aarch64 for concurrent builds .."
-  cd ../
-
-  echo "Creating/copying ${CURNAME}-armhf / ${CURNAME}-aarch64 .."
-
-  rsync -aW "${CURNAME}/" "${CURNAME}-armhf/" &
-  rsync -aW "${CURNAME}/" "${CURNAME}-aarch64/" &
-
-  wait
-
-  # aarch64 
-  cd "${CURNAME}-aarch64" || exit
-  if [[ -d "PrusaSlicer-aarch64" ]]; then
-    mv PrusaSlicer-aarch64 PrusaSlicer
+if [[ -v BUILD_AARCH64 ]]; then
+  if [[ ! -d "PrusaSlicerBuild-aarch64" ]]; then
+    git clone ${REPO} PrusaSlicerBuild-aarch64    
   fi
 
-  if [[ $1 == "seq" ]]; then
-    { time ${RUNTIME} run -it -v "${PWD}:/ps:z" psbuilder-aarch64 |& tee -a containers/aarch64-build.log && mv PrusaSlicer PrusaSlicer-aarch64; }
-  else
-    { time ${RUNTIME} run -it -v "${PWD}:/ps:z" psbuilder-aarch64 |& tee -a containers/aarch64-build.log && mv PrusaSlicer PrusaSlicer-aarch64; }&
-  fi
-
-  # armhf
-  cd "../${CURNAME}-armhf" || exit
-
-  if [[ -d "PrusaSlicer-armhf" ]]; then
-    mv PrusaSlicer-armhf PrusaSlicer
-  fi
-
-  if [[ $1 == "seq" ]]; then
-    { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v "${PWD}:/ps:z" psbuilder-armhf |& tee -a containers/armhf-build.log && mv PrusaSlicer PrusaSlicer-armhf; } 
-  else
-    { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -it -v "${PWD}:/ps:z" psbuilder-armhf |& tee -a containers/armhf-build.log && mv PrusaSlicer PrusaSlicer-armhf; }&
-  fi
-
-  cd ../
-
-  wait
-
-else 
-  echo "Unable to build."
-  exit 1
+  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-armhf; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
+
+
+if [[ -v BUILD_ARMHF ]]; then
+  if [[ ! -d "PrusaSlicerBuild-armhf" ]]; then
+    git clone ${REPO} PrusaSlicerBuild-armhf
+  fi
+
+  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
+fi
+
+jobs
+wait
