@@ -73,7 +73,7 @@ if [[ -v BUILD_AARCH64 ]]; then
     git clone ${REPO} PrusaSlicerBuild-aarch64    
   fi
 
-  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-armhf; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
+  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
 
 
