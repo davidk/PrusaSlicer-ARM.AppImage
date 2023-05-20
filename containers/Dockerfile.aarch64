@@ -8,7 +8,10 @@
 # AppImage files should be written to your directory
 FROM docker.io/balenalib/raspberrypi4-64
 
-RUN apt-get update && apt-get install -y wget git jq curl
+RUN apt-get update && apt-get install -y wget git jq curl python3-pip
+
+# Fix: pre-install and pin lief due to upstream bug
+RUN pip3 install lief==0.12.3
 
 WORKDIR /ps
 
