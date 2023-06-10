@@ -262,7 +262,7 @@ ${LATEST_VERSION}
 
 PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
 
-_Prusa Research has officially begun releasing their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds for the best experience when available for your platform._
+_Prusa Research has released their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds for the best experience when/if available for your platform._
 
 This release tracks PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). AppImages are built using appimage-builder (with PrusaSlicer's dependencies) for broader compatibility at the cost of an increased AppImage size.
 
@@ -293,10 +293,10 @@ These are for 64-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-aarch64.
 
 To use this AppImage, dependencies on the host may be needed (Raspberry Pi OS). Run the following in a terminal to install them:
 
-	sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev \
-	libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential \
-	pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev \
-	libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev \
+	sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev \\
+	libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential \\
+	pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev \\
+	libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev \\
 	libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev fuse libfuse2
 
 After downloading the AppImage and installing dependencies, make the AppImage executable and run the AppImage to launch PrusaSlicer:
