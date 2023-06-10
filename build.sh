@@ -258,10 +258,60 @@ echo "Finished build process for PrusaSlicer and arch $(uname -m)."
 echo "Here's some information to help with generating and posting a release on GitHub:"
   
 cat <<EOF
-Title: PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
-Tag: ${LATEST_VERSION}
------
-_Prusa Research has officially begun releasing their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds going forward._
-This release mirrors PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). AppImages are now built using appimage-builder (with PrusaSlicer's dependencies) for broader compatibility at the cost of an increased AppImage size.
------
+${LATEST_VERSION}
+
+PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
+
+_Prusa Research has officially begun releasing their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds for the best experience when available for your platform._
+
+This release tracks PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). AppImages are built using appimage-builder (with PrusaSlicer's dependencies) for broader compatibility at the cost of an increased AppImage size.
+
+### AppImage selection
+
+Run the following in a terminal:
+
+\`\`\`bash
+pi@raspberry:~$ uname -m
+aarch64
+\`\`\`
+
+If the command does not print aarch64 (or arm64), grab an \`armhf\` AppImage.
+
+#### Architectures
+
+##### armhf
+
+armhf distributions are for 32-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-armhf.AppImage\`
+
+##### arm64 / aarch64
+
+These are for 64-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage\`
+
+### How do I run the AppImage?
+
+##### Install dependencies
+
+To use this AppImage, dependencies on the host may be needed (Raspberry Pi OS). Run the following in a terminal to install them:
+
+	sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev \
+	libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential \
+	pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev \
+	libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev \
+	libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev fuse libfuse2
+
+After downloading the AppImage and installing dependencies, make the AppImage executable and run the AppImage to launch PrusaSlicer:
+
+32-bit:
+
+    $ chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage
+    $ ./PrusaSlicer-${LATEST_VERSION}-armhf.AppImage
+
+64-bit:
+
+    $ chmod +x PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
+    $ ./PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
+
+**\`Minimal versions\`** These AppImages include fewer dependencies to reduce size but may not be compatible with older distributions.
+
+All images were built on the Radxa Rock5B platform, optioned with 16GB of RAM and NVMe storage. Additional testing is done on Raspberry Pi 4Bs using Raspberry Pi OS Desktop 64-bit and 32-bit.
 EOF
