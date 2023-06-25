@@ -34,7 +34,8 @@ if [[ -z "${VERSION}" ]]; then
   exit 1
 fi
 
-LOG="$(sed -e 's/aarch64> //' < "$1" | sed -e 's/armhf> //' | sed -e "1,/PrusaSlicer-${VERSION#version_} ARM AppImages/ d" | grep -vE '(real|user|sys)' | jq -csR)"
+LOG="$(sed -e 's/aarch64> //' < "$1" | sed -e 's/armhf> //' | sed -e "1,/PrusaSlicer-${VERSION#version_} ARM AppImages/ d" | grep -vE '^(real|user|sys)' | jq -csR)"
+
 shift 1
 
 if [[ -z "${LOG}" ]]; then
