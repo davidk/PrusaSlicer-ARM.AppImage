@@ -3,6 +3,8 @@ PrusaSlicer/
 appimage-build/
 *.AppImage
 *.zsync
+PrusaSlicerBuild*/
+*.log
 
 # Vim
 *.swp
