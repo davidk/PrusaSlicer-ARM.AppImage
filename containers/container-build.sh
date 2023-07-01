@@ -14,7 +14,6 @@
 # Test system: Radxa Rock 5B + native NVMe storage, optioned w/16GB RAM
 #
 
-REPO="https://github.com/davidk/PrusaSlicer-ARM.AppImage"
 BUILD_AARCH64=""
 BUILD_ARMHF=""
 
@@ -70,7 +69,7 @@ cd ../
 
 if [[ -v BUILD_AARCH64 ]]; then
   if [[ ! -d "PrusaSlicerBuild-aarch64" ]]; then
-    git clone ${REPO} PrusaSlicerBuild-aarch64    
+    git clone . PrusaSlicerBuild-aarch64
   fi
 
   { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
@@ -79,7 +78,7 @@ fi
 
 if [[ -v BUILD_ARMHF ]]; then
   if [[ ! -d "PrusaSlicerBuild-armhf" ]]; then
-    git clone ${REPO} PrusaSlicerBuild-armhf
+    git clone . PrusaSlicerBuild-armhf
   fi
 
   { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
