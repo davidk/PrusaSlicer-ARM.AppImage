@@ -2,14 +2,13 @@
 # container-build
 #
 # This utility is designed to be used on an aarch64 build machine with a container
-# runtime to enable builds with fewer effects on a host system (needing to install 
+# runtime to enable builds with fewer effects on a host system (needing to install
 # build-specific packages, etc).
 #
 # Note: Resource constraints may make building armhf/aarch64 concurrently on an aarch64
 # system impossible.
 #
-# Usage: ./container-build.sh 
-# Sequential builds: ./container-build.sh seq
+# Usage: ./container-build.sh [aarch64 | armhf | all] [ version ]
 #
 # Test system: Radxa Rock 5B + native NVMe storage, optioned w/16GB RAM
 #
@@ -32,13 +31,19 @@ case $1 in
     BUILD_ARMHF="yes"
   ;;
   *)
-    echo "Options: [ aarch64 | armhf | all ]"
+    echo "Options: [ aarch64 | armhf | all ] [ version ]"
     echo "Example: $0 aarch64"
+    echo "Example: $0 armhf version_2.6.0"
+    echo "Example: $0 all"
+    echo "Version is implied to be 'latest' if not provided"
     exit 1
   ;;
 esac
 
-# detect platform architecture 
+# set target build version, defaulting to latest if not set
+export BUILD_VERSION="${2:=latest}"
+
+# detect platform architecture
 DPKG_ARCH="$(dpkg --print-architecture)"
 
 if hash podman; then
@@ -47,7 +52,7 @@ if hash podman; then
 elif hash docker; then
   echo "Detected Docker container runtime under ${DPKG_ARCH} .."
   RUNTIME="docker"
-else 
+else
   echo "Please install podman or docker container tooling on this system to proceed."
   exit 1
 fi
@@ -72,7 +77,7 @@ if [[ -v BUILD_AARCH64 ]]; then
     git clone . PrusaSlicerBuild-aarch64
   fi
 
-  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
+  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
 
 
@@ -81,7 +86,7 @@ if [[ -v BUILD_ARMHF ]]; then
     git clone . PrusaSlicerBuild-armhf
   fi
 
-  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
+  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
 fi
 
 jobs
