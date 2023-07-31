@@ -1,12 +1,16 @@
 #!/bin/bash
 # build.sh - PrusaSlicer ARM build assistant
-# 
-# This script will assist with installing dependencies, building PrusaSlicer and generating an AppImage on a compatible Raspberry Pi OS
-# distribution and system.
 #
-# Test system specifications: 
-# OS: Raspberry Pi OS
-# System: Raspberry Pi 4 (ideally 8GB RAM for building PrusaSlicer; 4GB with SSD swap if needed) 
+# This script will assist with installing dependencies, building PrusaSlicer
+# and generating an AppImage on a compatible Raspberry Pi OS distribution and armhf/aarch64 system.
+#
+# How to use:
+# $ ./build.sh
+# Walks through the process to install dependencies, builds PrusaSlicer and packages the AppImage.
+# $ ./build.sh automated
+# Does not prompt (defaults to the latest PrusaSlicer version) and executes the steps above.
+# $./build.sh dependencies
+# Installs dependencies required to build PrusaSlicer and generate an AppImage and exits.
 #
 
 # PrusaSlicer's GitHub API URL
@@ -21,6 +25,8 @@ if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
 fi
 
+# $0 automated: Run in non-interactive mode. Skips questions and builds latest PrusaSlicer for ARM.
+# $0 dependencies: Exit after installing dependencies, intended for container pre-imaging.
 if [[ $1 == "automated" ]]; then
   AUTO="yes"
 elif [[ $1 == "dependencies" ]]; then
@@ -256,7 +262,7 @@ done
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
 
 echo "Here's some information to help with generating and posting a release on GitHub:"
-  
+
 cat <<EOF
 ${LATEST_VERSION}
 
