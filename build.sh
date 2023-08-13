@@ -244,7 +244,6 @@ cmake .. \
 -DCMAKE_PREFIX_PATH="$(pwd)/../deps/build/destdir/usr/local" \
 -DSLIC3R_PCH=OFF \
 -DSLIC3R_STATIC=ON \
--DSLIC3R_WX_STABLE=OFF \
 -DSLIC3R_GTK=3 \
 -DCMAKE_BUILD_TYPE=Release
 
