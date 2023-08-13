@@ -178,7 +178,11 @@ fi
 LATEST_VERSION="version_$(curl -SsL ${LATEST_RELEASE} | jq -r 'first | .tag_name | select(test("^version_[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-{0,1}(\\w+){0,1}$"))' | cut -d_ -f2)"
 
 if [[ -v AUTO ]]; then
-  REPLY="${BUILD_VERSION:=''}"
+  if [[ -n "${BUILD_VERSION}" ]]; then
+    REPLY="${BUILD_VERSION}"
+  else
+    REPLY=""
+  fi
 else
   read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
 fi

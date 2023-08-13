@@ -40,8 +40,11 @@ case $1 in
   ;;
 esac
 
-# set target build version, defaulting to latest if not set
-export BUILD_VERSION="${2:=latest}"
+# Set target build version if one was provided
+if [[ -n "${2}" ]]; then
+  export BUILD_VERSION="${2}"
+  echo "Build version has been set to ${2} .."
+fi
 
 # detect platform architecture
 DPKG_ARCH="$(dpkg --print-architecture)"
@@ -77,7 +80,7 @@ if [[ -v BUILD_AARCH64 ]]; then
     git clone . PrusaSlicerBuild-aarch64
   fi
 
-  { time ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
+  { time ${RUNTIME} run --name psarm64 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
 
 
@@ -86,7 +89,7 @@ if [[ -v BUILD_ARMHF ]]; then
     git clone . PrusaSlicerBuild-armhf
   fi
 
-  { time setarch -B linux32 ${RUNTIME} run --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
+  { time setarch -B linux32 ${RUNTIME} run --name psarm32 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
 fi
 
 jobs
