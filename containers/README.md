@@ -55,18 +55,18 @@ $ ./container-build.sh all
 
 Requirements:
 
-    * `~/.config/github-token` with contents `GITHUB_TOKEN="secret"`. The token should have enough permissions in order to create a release on the target repository.
+* `~/.config/github-token` with contents `GITHUB_TOKEN="secret"`. The token should have enough permissions in order to create a release on the target repository.
 
-    * Build completed by `./container-build.sh` (builds using `./build.sh` are not supported).
+* Build completed by `./container-build.sh` (builds using `./build.sh` are not supported).
 
 Input:
 
-    * Accepts the build log and uses `~/.config/github-token` to stage a release on GitHub. This will generate/upload a SHA256SUMS, upload AppImages for aarch64/armhf, fill out the body of text for the release, set the version tag and title. It is up to the end user to determine if the build is a 'pre-release' or 'release' and publish the release/make it visible. 
+* Accepts the build log and uses `~/.config/github-token` to stage a release on GitHub. This will generate/upload a SHA256SUMS, upload AppImages for aarch64/armhf, fill out the body of text for the release, set the version tag and title. It is up to the end user to determine if the build is a 'pre-release' or 'release' and publish the release/make it visible. 
 
 
 Output:
 
-   * A release on GitHub with assets uploaded (SHA256SUMs, aarch64/armhf AppImages), body, title and version tag filled out using the build log.
+* A release on GitHub with assets uploaded (SHA256SUMs, aarch64/armhf AppImages), body, title and version tag filled out using the build log.
 
 Example:
 
