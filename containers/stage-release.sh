@@ -72,7 +72,7 @@ if [[ -z ${RELEASE_ID} ]] || [[ "${RELEASE_ID}" == "null" ]]; then
 fi
 
 echo "Generating SHA256SUMS for AppImages .."
-{ opwd="$PWD"; cd ../PrusaSlicerBuild-aarch64/ || exit; sha256sum ./*.AppImage; cd ../PrusaSlicerBuild-armhf/ || exit; sha256sum ./*.AppImage || exit; cd "$opwd" || exit; } > SHA256SUMS
+{ opwd="$PWD"; cd ../PrusaSlicerBuild-aarch64/ || exit; sha256sum *.AppImage; cd ../PrusaSlicerBuild-armhf/ || exit; sha256sum *.AppImage || exit; cd "$opwd" || exit; } > SHA256SUMS
 
 echo "Uploading AppImages and files to release ID ${RELEASE_ID}"
 
