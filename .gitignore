@@ -1,9 +1,10 @@
 # Ignore build files/assets
 PrusaSlicer/
 appimage-build/
+PrusaSlicerBuild*/
+containers/build.sh
 *.AppImage
 *.zsync
-PrusaSlicerBuild*/
 *.log
 
 # Vim
