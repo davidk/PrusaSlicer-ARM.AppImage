@@ -233,7 +233,9 @@ echo "Generating [${APPIMAGE_BUILD_TYPE}] build(s) for ${APPIMAGE_ARCH}"
 echo
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
-cd PrusaSlicer/deps && \
+cd PrusaSlicer && \
+[[ -d "../patches/${LATEST_VERSION}" ]] && git apply "../patches/${LATEST_VERSION}/*" \
+cd deps && \
 mkdir -p build && \
 cd build && \
 cmake .. -DDEP_WX_GTK3=ON && \
