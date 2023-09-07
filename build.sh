@@ -234,7 +234,7 @@ echo
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
 cd PrusaSlicer && \
-[[ -d "../patches/${LATEST_VERSION}" ]]; git apply -v ../patches/"${LATEST_VERSION}"/* && \
+[[ -d "../patches/${LATEST_VERSION}" ]]; git apply -v ../patches/"${LATEST_VERSION}"/*;  \
 cd deps && \
 mkdir -p build && \
 cd build && \
