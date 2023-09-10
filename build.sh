@@ -111,7 +111,7 @@ if ! hash appimage-builder >/dev/null; then
 
   sudo chmod +x /usr/local/bin/appimagetool
 
-    case ${DPKG_ARCH} in
+    case "${DPKG_ARCH}" in
       "armhf")
         # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
         echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
@@ -226,7 +226,7 @@ else
   read -n 1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
 fi
 
-case ${REPLY} in
+case "${REPLY}" in
   m|minimal)
     APPIMAGE_BUILD_TYPE="minimal"
     ;;
