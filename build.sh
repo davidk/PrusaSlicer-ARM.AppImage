@@ -41,15 +41,19 @@ DPKG_ARCH="$(dpkg --print-architecture)"
 
 echo "Greetings from the PrusaSlicer ARM (${DPKG_ARCH}) AppImage build assistant .."
 
-if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-  APPIMAGE_ARCH="armhf"
-elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-  APPIMAGE_ARCH="aarch64"
-else
-  echo "Unknown architecture [arch: ${DPKG_ARCH}]."
-  echo "Please update the build assistant to add support."
-  exit 1
-fi
+case ${DPKG_ARCH} in
+  "armhf")
+    APPIMAGE_ARCH="armhf"
+    ;;
+  "arm64")
+    APPIMAGE_ARCH="aarch64"
+    ;;
+  *)
+    echo "Unknown architecture [arch: ${DPKG_ARCH}]."
+    echo "Please update the build assistant to add support."
+    exit 1
+    ;;
+esac
 
 echo
 echo '**********************************************************************************'
@@ -107,20 +111,27 @@ if ! hash appimage-builder >/dev/null; then
 
   sudo chmod +x /usr/local/bin/appimagetool
 
-  if [[ "${DPKG_ARCH}" == "armhf" ]]; then
-    # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
-    echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
+    case ${DPKG_ARCH} in
+      "armhf")
+        # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
+        echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
 
-    if ! pip3 install appimage-builder==0.9.2; then
-      echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
-      exit 1
-    fi
-  elif [[ "${DPKG_ARCH}" == "arm64" ]]; then
-    if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-      echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
-      exit 1
-    fi
-  fi
+        if ! pip3 install appimage-builder==0.9.2; then
+          echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
+          exit 1
+        fi
+        ;;
+      "arm64")
+        if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+          echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+          exit 1
+        fi
+        ;;
+      *)
+        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH}. Please add support within build.sh."
+        exit 1
+        ;;
+    esac
 
   if ! hash appimage-builder >/dev/null; then
     echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
@@ -184,7 +195,7 @@ if [[ -v AUTO ]]; then
     REPLY=""
   fi
 else
-  read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.1.1' or commit '22d9fcb')? Or continue (leave blank)? " -r
+  read -p "The latest version appears to be: ${LATEST_VERSION} .. Would you like to enter a different version (like a git tag 'version_2.A.B' or commit '22d9fcb')? Or continue (leave blank)? " -r
 fi
 
 if [[ "${REPLY}" != "" ]]; then
@@ -197,7 +208,6 @@ else
 fi
 
 if [[ -z "${LATEST_VERSION}" ]]; then
-
   echo "Could not determine the latest version."
   echo
   echo "Possible reasons for this error:"
@@ -216,7 +226,7 @@ else
   read -n 1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
 fi
 
-case $REPLY in
+case ${REPLY} in
   m|minimal)
     APPIMAGE_BUILD_TYPE="minimal"
     ;;
@@ -234,7 +244,7 @@ echo
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
 cd PrusaSlicer && \
-[[ -d "../patches/${LATEST_VERSION}" ]]; git apply -v ../patches/"${LATEST_VERSION}"/*;  \
+[[ -d "../patches/${LATEST_VERSION}" ]]; git apply -v ../patches/"${LATEST_VERSION}"/*; \
 cd deps && \
 mkdir -p build && \
 cd build && \
@@ -258,12 +268,14 @@ cd ../..
 for build_type in ${APPIMAGE_BUILD_TYPE}; do
   cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+
   if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
     # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
     appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
   else
     appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
   fi
+
   rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
 done
 
