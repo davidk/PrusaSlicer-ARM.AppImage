@@ -6,7 +6,7 @@
 # $ podman build -t psbuilder -f Dockerfile.aarch64 . 
 # $ podman run -it -v $PWD:/ps:z psbuilder
 # AppImage files should be written to your directory
-FROM docker.io/balenalib/raspberrypi4-64
+FROM docker.io/balenalib/raspberrypi5
 
 RUN apt-get update && apt-get install -y wget git jq curl python3-pip
 
