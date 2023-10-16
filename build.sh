@@ -317,7 +317,13 @@ These are for 64-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-aarch64.
 
 ##### Install dependencies
 
-To use this AppImage, dependencies on the host may be needed (Raspberry Pi OS). Run the following in a terminal to install them:
+Raspberry Pi OS **Bookwoorm** users: You may need to set your locale to UTF-8 if an error occurs after launching. On the desktop: `Preferences > Raspberry Pi Configuration > Localization > Set Locale > Character Set > UTF-8`. Reboot when prompted.
+
+Bookworm also needs the libfuse2 package:
+
+    sudo apt-get install -y libfuse2
+
+For other Raspberry Pi OS distributions, more dependencies on the host may be needed. Run the following in a terminal to install them:
 
 	sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev \\
 	libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential \\
