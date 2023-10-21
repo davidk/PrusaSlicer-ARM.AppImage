@@ -317,7 +317,7 @@ These are for 64-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-aarch64.
 
 ##### Install dependencies
 
-Raspberry Pi OS **Bookwoorm** users: You may need to set your locale to UTF-8 if an error occurs after launching. On the desktop: `Preferences > Raspberry Pi Configuration > Localization > Set Locale > Character Set > UTF-8`. Reboot when prompted.
+Raspberry Pi OS **Bookwoorm** users: You may need to set your locale to UTF-8 if an error occurs after launching. On the desktop: \`Preferences > Raspberry Pi Configuration > Localization > Set Locale > Character Set > UTF-8\`. Reboot when prompted.
 
 Bookworm also needs the libfuse2 package:
 
