@@ -12,7 +12,7 @@
 # $ time podman run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z psbuilder
 #
 # AppImage files should be written to your directory
-FROM docker.io/balenalib/raspberrypi3
+FROM docker.io/balenalib/armv7hf-debian
 
 RUN apt-get update && apt-get install -y wget git file jq curl
 
