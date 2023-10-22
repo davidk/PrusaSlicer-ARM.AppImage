@@ -1,0 +1,103 @@
+From fdbde92a8f1ee1ebef9e5d6d58b749401ed3318d Mon Sep 17 00:00:00 2001
+Date: Sat, 21 Oct 2023 15:25:21 -0700
+Subject: [PATCH] Patch all files needed to build 2.7.0-alpha1
+
+---
+ src/libslic3r/Emboss.cpp          |   5 +++--
+ src/libslic3r/NSVGUtils.cpp       |   3 ++-
+ src/libslic3r/StaticMap.hpp       |   2 ++
+ src/slic3r/GUI/IconManager.cpp    |   4 ++++
+ src/slic3r/GUI/Jobs/EmbossJob.cpp |   1 +
+ 6 files changed, 12 insertions(+), 3 deletions(-)
+ create mode 100644 src/libslic3r/.StaticMap.hpp.swp
+
+diff --git a/src/libslic3r/Emboss.cpp b/src/libslic3r/Emboss.cpp
+index 0ff5ffc..aeb865c 100644
+--- a/src/libslic3r/Emboss.cpp
++++ b/src/libslic3r/Emboss.cpp
+@@ -2,6 +2,7 @@
+ ///|/
+ ///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+ ///|/
++#include <numeric>
+ #include "Emboss.hpp"
+ #include <stdio.h>
+ #include <cstdlib>
+@@ -562,7 +563,7 @@ Duplicates collect_duplicit_indices(const ExPolygons &expoly)
+ 
+     // initialize original index locations
+     std::vector<uint32_t> idx(pts.size());
+-    iota(idx.begin(), idx.end(), 0);
++    std::iota(idx.begin(), idx.end(), 0);
+     std::sort(idx.begin(), idx.end(), 
+         [&pts](uint32_t i1, uint32_t i2) { return pts[i1] < pts[i2]; });
+ 
+@@ -2218,4 +2219,4 @@ void remove_spikes(ExPolygons &expolygons, const SpikeDesc &spike_desc)
+     remove_bad(expolygons);
+ }
+ 
+-#endif // REMOVE_SPIKES
+\ No newline at end of file
++#endif // REMOVE_SPIKES
+diff --git a/src/libslic3r/NSVGUtils.cpp b/src/libslic3r/NSVGUtils.cpp
+index 21fde6b..b2ca975 100644
+--- a/src/libslic3r/NSVGUtils.cpp
++++ b/src/libslic3r/NSVGUtils.cpp
+@@ -7,6 +7,7 @@
+ #include <charconv> // to_chars
+ 
+ #include <boost/nowide/iostream.hpp>
++#include <boost/nowide/fstream.hpp>
+ #include "ClipperUtils.hpp"
+ #include "Emboss.hpp" // heal for shape
+ 
+@@ -521,4 +522,4 @@ HealedExPolygons stroke_to_expolygons(const LinesPath &lines_path, const NSVGsha
+     return Emboss::heal_polygons(result, is_non_zero, param.max_heal_iteration);
+ }
+ 
+-} // namespace
+\ No newline at end of file
++} // namespace
+diff --git a/src/libslic3r/StaticMap.hpp b/src/libslic3r/StaticMap.hpp
+index 84054dd..afa3904 100644
+--- a/src/libslic3r/StaticMap.hpp
++++ b/src/libslic3r/StaticMap.hpp
+@@ -4,6 +4,8 @@
+ #include <optional>
+ #include <array>
+ #include <string_view>
++#include <functional>
++#include <stdexcept>
+ 
+ namespace Slic3r {
+ 
+diff --git a/src/slic3r/GUI/IconManager.cpp b/src/slic3r/GUI/IconManager.cpp
+index a063718..aa319d0 100644
+--- a/src/slic3r/GUI/IconManager.cpp
++++ b/src/slic3r/GUI/IconManager.cpp
+@@ -1,6 +1,10 @@
+ #include "IconManager.hpp"
+ #include <cmath>
++#include <numeric>
+ #include <boost/log/trivial.hpp>
++#include <boost/nowide/cstdio.hpp>
++#include <boost/filesystem/operations.hpp>
++#include <boost/algorithm/string.hpp>
+ #include "nanosvg/nanosvg.h"
+ #include "nanosvg/nanosvgrast.h"
+ #include "libslic3r/Utils.hpp" // ScopeGuard   
+diff --git a/src/slic3r/GUI/Jobs/EmbossJob.cpp b/src/slic3r/GUI/Jobs/EmbossJob.cpp
+index 3fc4616..3c6902d 100644
+--- a/src/slic3r/GUI/Jobs/EmbossJob.cpp
++++ b/src/slic3r/GUI/Jobs/EmbossJob.cpp
+@@ -6,6 +6,7 @@
+ 
+ #include <stdexcept>
+ #include <type_traits>
++#include <boost/log/trivial.hpp>
+ 
+ #include <libslic3r/Model.hpp>
+ #include <libslic3r/Format/OBJ.hpp> // load_obj for default mesh
+-- 
+2.39.2
+
