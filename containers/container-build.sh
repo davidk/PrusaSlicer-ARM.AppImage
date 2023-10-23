@@ -69,7 +69,7 @@ fi
 
 if [[ -v BUILD_ARMHF ]]; then
   echo "Generating builder images for armhf .."
-  ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
+  time setarch armv7l -B ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
 fi
 
 rm -f ./build.sh
@@ -89,7 +89,7 @@ if [[ -v BUILD_ARMHF ]]; then
     git clone . PrusaSlicerBuild-armhf
   fi
 
-  { time setarch -B linux32 ${RUNTIME} run --rm --name psarm32 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
+  { time setarch armv7l -B ${RUNTIME} run --rm --name psarm32 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
 fi
 
 jobs
