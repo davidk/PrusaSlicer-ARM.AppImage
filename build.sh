@@ -48,6 +48,9 @@ case ${DPKG_ARCH} in
   "arm64")
     APPIMAGE_ARCH="aarch64"
     ;;
+  "amd64")
+    APPIMAGE_ARCH="amd64"
+    ;;
   *)
     echo "Unknown architecture [arch: ${DPKG_ARCH}]."
     echo "Please update the build assistant to add support."
@@ -132,6 +135,12 @@ if ! hash appimage-builder >/dev/null; then
           exit 1
         fi
         ;;
+      "amd64")
+        if ! pip3 install appimage-builder; then
+          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pip3 .."
+          exit 1
+        fi
+	;;
       *)
         echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH}. Please add support within build.sh."
         exit 1
