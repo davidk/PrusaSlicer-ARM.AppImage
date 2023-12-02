@@ -15,26 +15,35 @@
 
 BUILD_AARCH64=""
 BUILD_ARMHF=""
+BUILD_AMD64=""
 
 # determine build parameters
 case $1 in
   "aarch64")
     BUILD_AARCH64="yes"
     unset BUILD_ARMHF
+    unset BUILD_AMD64
   ;;
   "armhf")
     BUILD_ARMHF="yes"
     unset BUILD_AARCH64
+    unset BUILD_AMD64
   ;;
+  "amd64")
+    BUILD_AMD64="yes"
+    unset BUILD_AARCH64
+    unset BUILD_ARMHF
   "all")
     BUILD_AARCH64="yes"
     BUILD_ARMHF="yes"
   ;;
   *)
-    echo "Options: [ aarch64 | armhf | all ] [ version ]"
+    echo "Options: [ aarch64 | armhf | amd64 | all(*) ] [ version ]"
     echo "Example: $0 aarch64"
     echo "Example: $0 armhf version_2.6.0"
-    echo "Example: $0 all"
+    echo "Example: $0 amd64"
+    echo
+    echo "Example (this will only build aarch64 and armhf): $0 all"
     echo "Version is implied to be 'latest' if not provided"
     exit 1
   ;;
@@ -72,6 +81,11 @@ if [[ -v BUILD_ARMHF ]]; then
   time setarch armv7l -B ${RUNTIME} build -t psbuilder-armhf -f Dockerfile.armhf .
 fi
 
+if [[ -v BUILD_AMD64 ]]; then
+  echo "Generating builder images for amd64.."
+  ${RUNTIME} build -t psbuilder-amd64 -f Dockerfile.amd64 .
+fi
+
 rm -f ./build.sh
 cd ../
 
@@ -80,9 +94,8 @@ if [[ -v BUILD_AARCH64 ]]; then
     git clone . PrusaSlicerBuild-aarch64
   fi
 
-  { time ${RUNTIME} run --rm --name psarm64 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
+  { time ${runtime} run --rm --name psarm64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${pwd}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
-
 
 if [[ -v BUILD_ARMHF ]]; then
   if [[ ! -d "PrusaSlicerBuild-armhf" ]]; then
@@ -90,6 +103,14 @@ if [[ -v BUILD_ARMHF ]]; then
   fi
 
   { time setarch armv7l -B ${RUNTIME} run --rm --name psarm32 --device /dev/fuse --cap-add SYS_ADMIN -e BUILD_VERSION -i -v "${PWD}/PrusaSlicerBuild-armhf:/ps:z" psbuilder-armhf; } |& sed -e 's/^/armhf> /;' |& tee -a armhf-build.log &
+fi
+
+if [[ -v BUILD_AMD64 ]]; then
+  if [[ ! -d "PrusaSlicerBuild-amd64" ]]; then
+    git clone . PrusaSlicerBuild-amd64
+  fi
+
+   { time ${runtime} run --rm --name psamd64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${pwd}/PrusaSlicerBuild-amd64:/ps:z" psbuilder-amd64; } |& sed -e 's/^/amd64> /;' |& tee amd64-build.log & 
 fi
 
 jobs
