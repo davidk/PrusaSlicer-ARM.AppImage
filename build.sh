@@ -104,6 +104,11 @@ if ! hash appimage-builder >/dev/null; then
   echo
   echo "Thanks, i'll get both installed .. "
 
+  # Change arch for appimagetool retrieval
+  if [[ "${APPIMAGE_ARCH}" == "amd64" ]]; then
+    APPIMAGE_ARCH="x86_64"
+  fi
+
   if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
     echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
     exit 1
