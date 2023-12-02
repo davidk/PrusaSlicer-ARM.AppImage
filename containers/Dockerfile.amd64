@@ -1,0 +1,10 @@
+FROM debian:bookworm
+
+RUN apt-get update && apt-get install -y wget git jq curl python3-pip texinfo autoconf automake
+
+WORKDIR /ps
+
+COPY ./build.sh /ps/build.sh
+RUN chmod +x ./build.sh && ./build.sh dependencies && rm -f ./build.sh
+
+CMD ["./build.sh","automated"]
