@@ -29,7 +29,7 @@ case $1 in
     unset BUILD_AARCH64
     unset BUILD_AMD64
   ;;
-  "amd64")
+  "amd64" | "x86_64")
     BUILD_AMD64="yes"
     unset BUILD_AARCH64
     unset BUILD_ARMHF
@@ -39,10 +39,11 @@ case $1 in
     BUILD_ARMHF="yes"
   ;;
   *)
-    echo "Options: [ aarch64 | armhf | amd64 | all(*) ] [ version ]"
+    echo "Options: [ aarch64 | armhf | [ amd64 | x86_64 ] | all(*) ] [ version ]"
     echo "Example: $0 aarch64"
     echo "Example: $0 armhf version_2.6.0"
     echo "Example: $0 amd64"
+    echo "Example: $0 x86_64"
     echo
     echo "Example (this will only build aarch64 and armhf): $0 all"
     echo "Version is implied to be 'latest' if not provided"
