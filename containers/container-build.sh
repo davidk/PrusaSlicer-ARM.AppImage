@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # container-build
 #
 # This utility is designed to be used on an aarch64 build machine with a container
@@ -33,6 +33,7 @@ case $1 in
     BUILD_AMD64="yes"
     unset BUILD_AARCH64
     unset BUILD_ARMHF
+  ;;
   "all")
     BUILD_AARCH64="yes"
     BUILD_ARMHF="yes"
@@ -55,14 +56,11 @@ if [[ -n "${2}" ]]; then
   echo "Build version has been set to ${2} .."
 fi
 
-# detect platform architecture
-DPKG_ARCH="$(dpkg --print-architecture)"
-
 if hash podman; then
-  echo "Detected Podman container runtime under ${DPKG_ARCH} .."
+  echo "Detected Podman container runtime .."
   RUNTIME="podman"
 elif hash docker; then
-  echo "Detected Docker container runtime under ${DPKG_ARCH} .."
+  echo "Detected Docker container runtime .."
   RUNTIME="docker"
 else
   echo "Please install podman or docker container tooling on this system to proceed."
@@ -94,7 +92,7 @@ if [[ -v BUILD_AARCH64 ]]; then
     git clone . PrusaSlicerBuild-aarch64
   fi
 
-  { time ${runtime} run --rm --name psarm64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${pwd}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
+  { time ${RUNTIME} run --rm --name psarm64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${PWD}/PrusaSlicerBuild-aarch64:/ps:z" psbuilder-aarch64; } |& sed -e 's/^/aarch64> /;' |& tee aarch64-build.log &
 fi
 
 if [[ -v BUILD_ARMHF ]]; then
@@ -110,7 +108,7 @@ if [[ -v BUILD_AMD64 ]]; then
     git clone . PrusaSlicerBuild-amd64
   fi
 
-   { time ${runtime} run --rm --name psamd64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${pwd}/PrusaSlicerBuild-amd64:/ps:z" psbuilder-amd64; } |& sed -e 's/^/amd64> /;' |& tee amd64-build.log & 
+   { time ${RUNTIME} run --rm --name psamd64 --device /dev/fuse --cap-add sys_admin -e build_version -v "${PWD}/PrusaSlicerBuild-amd64:/ps:z" psbuilder-amd64; } |& sed -e 's/^/amd64> /;' |& tee amd64-build.log & 
 fi
 
 jobs

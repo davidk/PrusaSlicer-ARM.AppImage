@@ -1,6 +1,9 @@
 FROM debian:bookworm
 
-RUN apt-get update && apt-get install -y wget git jq curl python3-pip texinfo autoconf automake
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+RUN apt-get update && apt-get install -y sudo locales wget git jq curl python3-pip texinfo autoconf automake
 
 WORKDIR /ps
 
