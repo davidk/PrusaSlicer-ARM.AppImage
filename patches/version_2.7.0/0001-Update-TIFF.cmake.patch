@@ -1,0 +1,21 @@
+Subject: [PATCH] Update TIFF.cmake
+
+---
+ deps/+TIFF/TIFF.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/deps/+TIFF/TIFF.cmake b/deps/+TIFF/TIFF.cmake
+index 9281dd5..88e0bba 100644
+--- a/deps/+TIFF/TIFF.cmake
++++ b/deps/+TIFF/TIFF.cmake
+@@ -10,6 +10,7 @@ add_cmake_project(TIFF
+         -Dzstd:BOOL=OFF
+         -Dpixarlog:BOOL=OFF
+         -Dlibdeflate:BOOL=OFF
++        -Dlerc:BOOL=OFF
+ )
+ 
+ set(DEP_TIFF_DEPENDS ZLIB PNG JPEG OpenGL)
+-- 
+2.40.1
+
