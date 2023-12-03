@@ -1,0 +1,14 @@
+# Dockerfile for building an AppImage using a contained Kubernets job
+# 
+# Usage (replace podman for docker as needed): 
+FROM docker.io/balenalib/raspberrypi5
+
+RUN apt-get update && apt-get install -y wget git jq curl python3-pip
+
+WORKDIR /ps
+
+RUN git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage
+
+RUN chmod +x ./build.sh && ./build.sh dependencies && rm -f ./build.sh
+
+CMD ["./build.sh","automated"]
