@@ -7,8 +7,11 @@ RUN apt-get update && apt-get install -y wget git jq curl python3-pip
 
 WORKDIR /ps
 
-RUN git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage
+RUN git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage && \
+cd PrusaSlicer-ARM.AppImage && \
+chmod +x ./build.sh && \
+./build.sh dependencies
 
-RUN chmod +x ./build.sh && ./build.sh dependencies && rm -f ./build.sh
+WORKDIR /ps/PrusaSlicer-ARM.AppImage
 
 CMD ["./build.sh","automated"]
