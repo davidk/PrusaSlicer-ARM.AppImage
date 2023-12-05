@@ -12,6 +12,6 @@ cd PrusaSlicer-ARM.AppImage && \
 chmod +x ./build.sh && \
 ./build.sh dependencies
 
-WORKDIR /ps/PrusaSlicer-ARM.AppImage
+WORKDIR /ps/PrusaSlicer-ARM.AppImage/containers
 
-CMD ["./build.sh","automated"]
+CMD ["./k8s-helper.sh","automated"]
