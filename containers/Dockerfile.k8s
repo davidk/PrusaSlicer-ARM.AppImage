@@ -3,11 +3,13 @@
 # Usage (replace podman for docker as needed): 
 FROM docker.io/balenalib/raspberrypi5
 
+ARG BRANCH=k8s_job
+
 RUN apt-get update && apt-get install -y wget git jq curl python3-pip
 
 WORKDIR /ps
 
-RUN git clone https://github.com/davidk/PrusaSlicer-ARM.AppImage && \
+RUN git clone --branch $BRANCH https://github.com/davidk/PrusaSlicer-ARM.AppImage && \
 cd PrusaSlicer-ARM.AppImage && \
 chmod +x ./build.sh && \
 ./build.sh dependencies
