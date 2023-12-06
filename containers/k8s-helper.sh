@@ -34,5 +34,9 @@ else
     cd ${sdir} && cd ../
   fi
 
-  exec ./build.sh "automated"
+  ./build.sh "automated"
+  cp -av ../PrusaSlicerBuild*/*.AppImage /build/
+
+  echo "Job complete, spinning until job is stopped/removed .."
+  tail -f /dev/null
 fi
