@@ -14,4 +14,4 @@ WORKDIR /ps
 
 COPY k8s-helper.sh .
 
-CMD ["./k8s-helper.sh"]
+ENTRYPOINT ["./k8s-helper.sh"]
