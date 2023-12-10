@@ -6,6 +6,7 @@ containers/build.sh
 *.AppImage
 *.zsync
 *.log
+SHA256SUMS
 
 # Vim
 *.swp
