@@ -7,36 +7,43 @@
 # then this helper will keep the Job around for attachment externally
 #
 
+BRANCH="k8s_job"
+
 rebuild=0
 rebuild_req=${1:-$rebuild}
 built=0
 sdir="$(dirname "$(readlink -f "$0")")"
 
-for appimage in ../PrusaSlicerBuild*/*.AppImage; do
+if [[ ! -d "/build" ]]; then
+  echo "ERROR: /build is not available"
+  exit 1;
+else
+  echo "Switching to /build directory"
+  cd /build
+fi
+
+if [[ ! -d "/build/PrusaSlicer-ARM.AppImage" ]]; then
+  echo "Not initialized. Cloning PrusaSlicer-ARM.AppImage .."
+  git clone --branch $BRANCH https://github.com/davidk/PrusaSlicer-ARM.AppImage
+fi
+
+cd PrusaSlicer-ARM.AppImage
+
+for appimage in ./PrusaSlicerBuild*/*.AppImage; do
   if [[ -f "${appimage}" ]]; then
     echo "Appimage found at: ${appimage} .."
     built=$((built+1))
   fi
 done
 
-# If the container is started after finishing a build to extract log/AppImages, do not start
-# a rebuild, instead spin and warn
 if [[ ${built} -gt 0 ]] && [[ "${rebuild_req}" != "rebuild" ]]; then
   echo "There are ${built} Appimages generated.. To stop this container, please kill this process."
   echo "To perform a rebuild, re-run using: '${0} rebuild' [rebuild_req: ${rebuild_req}]"
   echo "Issue a CTRL+C to exit now if running this on the command line."
   tail -f /dev/null
 else
-  # Figure out the path to execute build.sh in
-  if [[ "${PWD}" == "${sdir}" ]]; then
-    cd ../
-  else
-    cd ${sdir} && cd ../
-  fi
-
   ./build.sh "automated"
-  cp -av ../PrusaSlicerBuild*/*.AppImage /build/
 
-  echo "Job complete, spinning until job is stopped/removed .."
+  echo "Job complete, spinning until process is stopped/removed for examination .."
   tail -f /dev/null
 fi
