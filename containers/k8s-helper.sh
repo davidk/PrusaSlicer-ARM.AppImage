@@ -68,7 +68,7 @@ if [[ ${built} -gt 0 ]] && [[ "${rebuild_req}" != "rebuild" ]]; then
 else
   if [[ "${DPKG_ARCH}" == "arm64" ]]; then
     if [[ "${build_arch}" == "aarch64" ]]; then 
-      { time ./build.sh "automated"; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
+      { time ./build.sh "automated"; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
     fi
  
     # Build on arm64/aarch64, but constrain to armv7l arch
