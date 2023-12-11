@@ -6,12 +6,8 @@
 
 FROM docker.io/balenalib/raspberrypi5
 
-ARG BRANCH=k8s_job
-
 RUN apt-get update && apt-get install -y wget git jq curl python3-pip
-
 WORKDIR /ps
-
 COPY k8s-helper.sh .
 
 ENTRYPOINT ["./k8s-helper.sh"]
