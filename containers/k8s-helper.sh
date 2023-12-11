@@ -73,6 +73,9 @@ else
  
     # Build on arm64/aarch64, but constrain to armv7l arch
     if [[ "${build_arch}" == "armhf" ]]; then
+      # Building pip requirements needs a Rust toolchain and an OpenSSL dependency
+      curl https://sh.rustup.rs -sSf | sh -s -- -y
+      apt-get update && apt-get install -y librust-openssl-dev
       { time setarch armv7l -B ./build.sh "automated"; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log" &
     fi
   else
