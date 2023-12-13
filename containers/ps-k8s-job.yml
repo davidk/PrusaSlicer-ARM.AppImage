@@ -1,0 +1,98 @@
+# This is a Kubernetes job that builds PrusaSlicer
+#
+# Requirements:
+# Kubernetes Cluster with ARM nodes, at least >6Gb RAM
+# Ability to request a persistent volume (thruogh a PVC) for build storage
+#
+# Creating the namespace:
+# kubectl create ns prusaslicer
+# 
+# Launch this job:
+# kubectl apply -f job.yml -n prusaslicer
+#
+# Getting the pods:
+# $ kubectl get pods --selector=job-name=psbuild -n prusaslicer
+# NAME            READY   STATUS    RESTARTS   AGE
+# psbuild-s652n   1/1     Running   0          129m
+#
+# Following the log (this will select one of the containers, use -c to specify which):
+# $ kubectl logs -f jobs/psbuild -n prusaslicer
+#
+# Selecting the ARM64/aarch64 container:
+# $ kubectl logs -f jobs/psbuild -n prusaslicer -c psarm64
+#
+# To extract the AppImages after the build is complete:
+# $ kubectl exec psbuild-s652n -n prusaslicer -- bash -c "cd /build/PrusaSlicer-ARM.AppImage/;tar -zcf - *.AppImage" | tar -zxvf - -C ./
+#
+# Jobs persist after completing, removing:
+# kubectl delete -f job.yml -n prusaslicer
+#
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: psbuild64-longhorn-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: psbuild32-longhorn-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 20Gi
+---
+# https://kubernetes.io/docs/concepts/workloads/controllers/job/
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: psbuild
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: psarmhf
+        image: ghcr.io/davidk/psarmhf-k8s:latest
+        command: ["setarch","armv7l","./k8s-helper.sh","armhf"]
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - SYS_ADMIN
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 3Gi
+        volumeMounts:
+          - name: psbuild32-data
+            mountPath: /build
+      - name: psarm64
+        image: ghcr.io/davidk/psarm64-k8s:latest
+        command: ["./k8s-helper.sh","aarch64"]
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 3Gi
+        volumeMounts:
+          - name: psbuild64-data
+            mountPath: /build
+      restartPolicy: Never
+      volumes:
+        - name: psbuild32-data
+          persistentVolumeClaim:
+            claimName: psbuild32-longhorn-pvc
+        - name: psbuild64-data
+          persistentVolumeClaim:
+            claimName: psbuild64-longhorn-pvc
+
