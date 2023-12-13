@@ -86,3 +86,5 @@ else
   echo "Spinning until 'tail' process is stopped .."
   tail -f /dev/null
 fi
+
+exit 0
