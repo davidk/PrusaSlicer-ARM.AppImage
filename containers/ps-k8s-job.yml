@@ -6,7 +6,7 @@
 #
 # Creating the namespace:
 # kubectl create ns prusaslicer
-# 
+#
 # Launch this job:
 # kubectl apply -f job.yml -n prusaslicer
 #
@@ -56,13 +56,13 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: psbuild
+  name: psbuild32
 spec:
   backoffLimit: 4
   template:
     spec:
       containers:
-      - name: psarmhf
+      - name: psarm32
         image: ghcr.io/davidk/psarmhf-k8s:latest
         command: ["setarch","armv7l","./k8s-helper.sh","armhf"]
         securityContext:
@@ -73,25 +73,38 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: 3Gi
+            memory: 6Gi
         volumeMounts:
           - name: psbuild32-data
-            mountPath: /build
-      - name: psarm64
-        image: ghcr.io/davidk/psarm64-k8s:latest
-        command: ["./k8s-helper.sh","aarch64"]
-        imagePullPolicy: Always
-        resources:
-          requests:
-            memory: 3Gi
-        volumeMounts:
-          - name: psbuild64-data
             mountPath: /build
       restartPolicy: Never
       volumes:
         - name: psbuild32-data
           persistentVolumeClaim:
             claimName: psbuild32-longhorn-pvc
+---
+# https://kubernetes.io/docs/concepts/workloads/controllers/job/
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: psbuild64
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: psarm64
+        image: ghcr.io/davidk/psarm64-k8s:latest
+        command: ["./k8s-helper.sh","aarch64"]
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+          - name: psbuild64-data
+            mountPath: /build
+      restartPolicy: Never
+      volumes:
         - name: psbuild64-data
           persistentVolumeClaim:
             claimName: psbuild64-longhorn-pvc
