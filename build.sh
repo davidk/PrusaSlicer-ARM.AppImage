@@ -289,9 +289,15 @@ for build_type in ${APPIMAGE_BUILD_TYPE}; do
 
   if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
     # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
-    appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+    if ! appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
+      echo "Failed to generate AppImage. Please check log output."
+      exit 1;
+    fi
   else
-    appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+    if ! appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
+      echo "Failed to generate AppImage. Please check log output."
+      exit 1;
+    fi
   fi
 
   rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
