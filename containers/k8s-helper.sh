@@ -15,6 +15,9 @@ rebuild=0
 rebuild_req=${1:-$rebuild}
 built=0
 
+echo "PrusaSlicer ARM AppImage builder on Kubernetes .."
+echo "BRANCH:${BRANCH},DPKG_ARCH:${DPKG_ARCH},rebuild_req:${rebuild_req}"
+
 if [[ ! -d "/build" ]]; then
   echo "ERROR: /build is not available. This should be provided by the Kubernetes PersistentVolumeClaim."
   echo "Please check that the volume was created successfully by reviewing 'kubectl get events -A -w'. Exiting."
@@ -51,6 +54,7 @@ if [[ ! -d "/build/PrusaSlicer-ARM.AppImage" ]]; then
   git clone --branch $BRANCH https://github.com/davidk/PrusaSlicer-ARM.AppImage
 fi
 
+echo "Using repository under branch $BRANCH .."
 cd PrusaSlicer-ARM.AppImage || exit
 
 for appimage in ./PrusaSlicerBuild*/*.AppImage; do
@@ -61,30 +65,31 @@ for appimage in ./PrusaSlicerBuild*/*.AppImage; do
 done
 
 if [[ ${built} -gt 0 ]] && [[ "${rebuild_req}" != "rebuild" ]]; then
-  echo "There are ${built} Appimages generated.. To stop this container, please kill this process."
+  echo "There are ${built} AppImages generated.. To stop this container, please kill this process."
   echo "To perform a rebuild, re-run using: '${0} rebuild' [rebuild_req: ${rebuild_req}]"
   echo "Issue a CTRL+C to exit now if running this on the command line."
   tail -f /dev/null
 else
-  if [[ "${DPKG_ARCH}" == "arm64" ]]; then
+  echo "Found ${built} AppImages have been built so far. Proceeding to build."
+  if [[ "${DPKG_ARCH}" == "arm64" ]] || [[ "${DPKG_ARCH}" == "armhf" ]]; then
     if [[ "${build_arch}" == "aarch64" ]]; then 
-      { time ./build.sh "automated"; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
+      echo "Starting automated build for aarch64 .."
+      { time ./build.sh "automated" || tail -f /dev/null; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log"
     fi
  
     # Build on arm64/aarch64, but constrain to armv7l arch
     if [[ "${build_arch}" == "armhf" ]]; then
+      echo "Installing dependencies for armhf .."
       # Building pip requirements needs a Rust toolchain and an OpenSSL dependency
       curl https://sh.rustup.rs -sSf | sh -s -- -y
       source "$HOME/.cargo/env"
       apt-get update && apt-get install -y librust-openssl-dev
-      { time setarch armv7l -B ./build.sh "automated"; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log" &
+      echo "Starting automated build for armhf .."
+      { time setarch armv7l -B ./build.sh "automated"; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log"
     fi
   else
-    { time ./build.sh "automated"; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
+    { time ./build.sh "automated" || tail -f /dev/null; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
   fi
-
-  echo "Spinning until 'tail' process is stopped .."
-  tail -f /dev/null
 fi
 
 exit 0
