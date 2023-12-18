@@ -1,0 +1,68 @@
+# Job to perform help perform release tasks for PrusaSlicer ARM AppImages
+#
+# Note that this requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
+# for how to set this.
+#
+# To create on GitHub: 
+# Click profile icon > Settings > Developer settings > 
+#   Personal access tokens > Fine-grained tokens > Generate new token 
+# Permissions required: 
+#   - Read access to metadata
+#   - Read and Write access to administration, code and commit statuses
+# Lock repository access to the repository that AppImages will be released out of.
+#
+# Workflow for creating and releasing an AppImage using K3S
+# $ kubectl create -f build.yml -n prusaslicer; \
+# kubectl wait --for=condition=complete --timeout=-1s job/psbuild64 job/psbuild32 -n prusaslicer; \
+# kubectl create -n prusaslicer -f release.yml; \
+# kubectl exec jobs/releaser -n prusaslicer -it -- bash
+
+---
+# https://kubernetes.io/docs/concepts/workloads/controllers/job/
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: releaser
+  namespace: prusaslicer
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: releaser
+        image: ubuntu:latest
+        command: ["/bin/sh"]
+        args: ["-c","
+          apt-get update;
+          apt-get install -y vim jq curl;
+          mkdir /release;
+          cp -av /psbuild*/PrusaSlicer-ARM.AppImage/*.AppImage /release/;
+          cp -av /psbuild*/PrusaSlicer-ARM.AppImage/*.log /release/;
+          cp -av /psbuild*/PrusaSlicer-ARM.AppImage/containers/stage-release.sh /release/;
+          tail -f /dev/null;
+        "]
+        env:
+          # kubectl create -n prusaslicer secret generic github-release --from-literal=token='github secret token goes here'
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: github-release
+                key: token
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 2Gi
+        volumeMounts:
+          - name: psbuild32-data
+            mountPath: /psbuild32
+          - name: psbuild64-data
+            mountPath: /psbuild64
+      restartPolicy: Never
+      volumes:
+        - name: psbuild32-data
+          persistentVolumeClaim:
+            claimName: psbuild32-longhorn-pvc
+        - name: psbuild64-data
+          persistentVolumeClaim:
+            claimName: psbuild64-longhorn-pvc
+
