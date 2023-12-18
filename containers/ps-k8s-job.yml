@@ -1,25 +1,32 @@
 # This is a Kubernetes job that builds PrusaSlicer
 #
 # Requirements:
-# Kubernetes Cluster with ARM nodes, at least >6Gb RAM
-# Ability to request a persistent volume (thruogh a PVC) for build storage
+# Kubernetes Cluster with ARM nodes, nodes should have at least >6Gb RAM.
+# Ability to request a persistent volume (through a PVC) for build storage. 
+#
+# Lab Setup:
+# 2x Radxa Rock5B 16GB running K3S with storage provided by Longhorn.
+# 3x Raspberry Pi CM4 EMMC 4GB (used for management and smaller service tasks)
 #
 # Creating the namespace:
-# kubectl create ns prusaslicer
+# $ kubectl create ns prusaslicer
 #
-# Launch this job:
-# kubectl apply -f job.yml -n prusaslicer
+# Launch job:
+# $ kubectl apply -f job.yml -n prusaslicer
+#
+# Get job details:
+# $ kubectl get job -n prusaslicer
 #
 # Getting the pods:
-# $ kubectl get pods --selector=job-name=psbuild -n prusaslicer
+# $ kubectl get pods --selector=job-name=psbuild32 -n prusaslicer
 # NAME            READY   STATUS    RESTARTS   AGE
 # psbuild-s652n   1/1     Running   0          129m
 #
-# Following the log (this will select one of the containers, use -c to specify which):
-# $ kubectl logs -f jobs/psbuild -n prusaslicer
+# Following the log (psbuild64 to follow the aarch64 build, etc):
+# $ kubectl logs -f jobs/psbuild32 -n prusaslicer
 #
 # Selecting the ARM64/aarch64 container:
-# $ kubectl logs -f jobs/psbuild -n prusaslicer -c psarm64
+# $ kubectl logs -f jobs/psbuild64 -n prusaslicer
 #
 # To extract the AppImages after the build is complete:
 # $ kubectl exec psbuild-s652n -n prusaslicer -- bash -c "cd /build/PrusaSlicer-ARM.AppImage/;tar -zcf - *.AppImage" | tar -zxvf - -C ./
