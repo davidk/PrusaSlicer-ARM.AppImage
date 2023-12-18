@@ -16,6 +16,10 @@ source ~/.config/github-token
 
 # Live production repo, change for testing if desired
 REPO_URL="davidk/PrusaSlicer-ARM.AppImage"
+TARGET_BRANCH="main"
+
+# Paths to search where an AppImage might be located in
+APPIMAGE_SEARCH=("../PrusaSlicerBuild-aarch64/" "../PrusaSlicerBuild-armhf/" "./")
 
 if [[ $# -eq 0 ]]; then
   echo "usage: $0 [{arch64,armhf}-build.log] .."
@@ -43,6 +47,8 @@ if [[ -z "${LOG}" ]]; then
   exit 1
 fi
 
+echo "Creating a release in ${REPO_URL} with ${VERSION} .."
+
 RELEASE=$(curl -qsSL \
   -X POST \
   -H "Accept: application/vnd.github+json" \
@@ -51,7 +57,7 @@ RELEASE=$(curl -qsSL \
   https://api.github.com/repos/${REPO_URL}/releases \
   --data-binary @- << EOF
 {"tag_name":"${VERSION}",
-"target_commitish":"main",
+"target_commitish":"${TARGET_BRANCH}",
 "name":"PrusaSlicer-${VERSION#version_} ARM AppImages",
 "body":${LOG},
 "draft":true,
@@ -72,12 +78,26 @@ if [[ -z ${RELEASE_ID} ]] || [[ "${RELEASE_ID}" == "null" ]]; then
 fi
 
 echo "Generating SHA256SUMS for AppImages .."
-{ opwd="$PWD"; cd ../PrusaSlicerBuild-aarch64/ || exit; sha256sum *.AppImage; cd ../PrusaSlicerBuild-armhf/ || exit; sha256sum *.AppImage || exit; cd "$opwd" || exit; } > SHA256SUMS
+{ opwd="$PWD"; 
+  for fn in ${APPIMAGE_SEARCH[@]}; do
+    if [[ -d "${fn}" ]]; then
+      cd ${fn}/ || exit;
+      sha256sum *.AppImage; 
+    fi
+    cd "$opwd" || exit; 
+  done
+} > SHA256SUMS
 
 echo "Uploading AppImages and files to release ID ${RELEASE_ID}"
 
 
-for fn in ../PrusaSlicerBuild-aarch64/*.AppImage ../PrusaSlicerBuild-armhf/*.AppImage SHA256SUMS; do
+for fn in ${APPIMAGE_SEARCH[@]}*.AppImage SHA256SUMS; do
+
+  if [[ ! -e "${fn}" ]]; then
+    echo "AppImage not found at ${fn} .."
+    continue
+  fi
+
   echo
   echo
   echo ">>> Uploading ${fn} <<<"
