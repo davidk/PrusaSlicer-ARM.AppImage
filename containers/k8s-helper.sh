@@ -1,10 +1,19 @@
 #!/bin/bash
-# This is a simple helper to enable execution within a Kubernetes job
-# if run without PrusaSlicer being built, it will will proceed
-# normally and build PrusaSlicer.
+# This is a simple helper to enable execution within a Kubernetes job.
+# If run without PrusaSlicer already being built, it will proceed to
+# build PrusaSlicer.
 #
 # If it detects that PrusaSlicer has already been built or has crashed,
-# then this helper will keep the Job around for attachment externally
+# then this helper will keep the Job alive for attachment with a shell 
+# for debugging
+#
+# Examples: 
+#
+# Building armhf AppImages on an arm64/aarch64 platform
+# $ setarch armv7l -B ./k8s-helper.sh armhf
+#
+# Building aarch64 AppImages on an amd64/aarch64 platform
+# $ ./k8s-helper.sh aarch64
 #
 
 BRANCH="k8s_job"
@@ -85,7 +94,7 @@ else
       source "$HOME/.cargo/env"
       apt-get update && apt-get install -y librust-openssl-dev
       echo "Starting automated build for armhf .."
-      { time setarch armv7l -B ./build.sh "automated"; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log"
+      { time setarch armv7l -B ./build.sh "automated" || tail -f /dev/null; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log"
     fi
   else
     { time ./build.sh "automated" || tail -f /dev/null; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
