@@ -73,3 +73,17 @@ Example:
 ```bash
 $ ./stage-release.sh ../aarch64-build.log
 ```
+
+# PrusaSlicer-ARM.AppImage/containers/kubernetes
+
+Building container images for Kubernetes:
+
+```bash
+$ podman build -f Dockerfile.k8s -t localhost/psarm64-k8s .
+$ podman build -f Dockerfile.k8s.armhf -t localhost/psarmhf-k8s .
+
+$ podman login git
+$ podman push localhost/psarmhf-k8s git/davidk/psarmhf-k8s:latest
+$ podman push localhost/psarm64-k8s git/davidk/psarm64-k8s:latest
+```
+
