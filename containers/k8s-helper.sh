@@ -4,10 +4,10 @@
 # build PrusaSlicer.
 #
 # If it detects that PrusaSlicer has already been built or has crashed,
-# then this helper will keep the Job alive for attachment with a shell 
+# then this helper will keep the Job alive for attachment with a shell
 # for debugging
 #
-# Examples: 
+# Examples (to be added inside a Job definition's cmd, etc):
 #
 # Building armhf AppImages on an arm64/aarch64 platform
 # $ setarch armv7l -B ./k8s-helper.sh armhf
@@ -55,7 +55,7 @@ case $1 in
      echo "Example: $0 x86_64"
      echo
      exit 1
-  ;; 
+  ;;
 esac
 
 if [[ ! -d "/build/PrusaSlicer-ARM.AppImage" ]]; then
@@ -81,11 +81,11 @@ if [[ ${built} -gt 0 ]] && [[ "${rebuild_req}" != "rebuild" ]]; then
 else
   echo "Found ${built} AppImages have been built so far. Proceeding to build."
   if [[ "${DPKG_ARCH}" == "arm64" ]] || [[ "${DPKG_ARCH}" == "armhf" ]]; then
-    if [[ "${build_arch}" == "aarch64" ]]; then 
+    if [[ "${build_arch}" == "aarch64" ]]; then
       echo "Starting automated build for aarch64 .."
       { time ./build.sh "automated" || tail -f /dev/null; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log"
     fi
- 
+
     # Build on arm64/aarch64, but constrain to armv7l arch
     if [[ "${build_arch}" == "armhf" ]]; then
       echo "Installing dependencies for armhf .."
