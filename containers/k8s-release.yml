@@ -3,20 +3,19 @@
 # Note that this requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
 # for how to set this.
 #
-# To create on GitHub: 
-# Click profile icon > Settings > Developer settings > 
-#   Personal access tokens > Fine-grained tokens > Generate new token 
-# Permissions required: 
+# To create on GitHub:
+# Click profile icon > Settings > Developer settings >
+#   Personal access tokens > Fine-grained tokens > Generate new token
+# Permissions required:
 #   - Read access to metadata
 #   - Read and Write access to administration, code and commit statuses
 # Lock repository access to the repository that AppImages will be released out of.
 #
 # Workflow for creating and releasing an AppImage using K3S
-# $ kubectl create -f build.yml -n prusaslicer; \
-# kubectl wait --for=condition=complete --timeout=-1s job/psbuild64 job/psbuild32 -n prusaslicer; \
-# kubectl create -n prusaslicer -f release.yml; \
-# kubectl exec jobs/releaser -n prusaslicer -it -- bash
-
+#
+# $ kubectl create -n prusaslicer -f release.yml; kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && kubectl exec jobs/releaser -n prusaslicer -it -- sh
+# Navigate to /release, then run ./stage-release.sh ./[a build.log file]
+#
 ---
 # https://kubernetes.io/docs/concepts/workloads/controllers/job/
 apiVersion: batch/v1

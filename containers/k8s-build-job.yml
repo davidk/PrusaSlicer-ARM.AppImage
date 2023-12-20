@@ -12,7 +12,7 @@
 # $ kubectl create ns prusaslicer
 #
 # Launch job:
-# $ kubectl apply -f job.yml -n prusaslicer
+# $ kubectl apply -f k8s-build-job.yml -n prusaslicer
 #
 # Get job details:
 # $ kubectl get job -n prusaslicer
