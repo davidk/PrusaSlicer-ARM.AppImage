@@ -2,7 +2,7 @@
 #
 # Requirements:
 # Kubernetes Cluster with ARM nodes, nodes should have at least >6Gb RAM.
-# Ability to request a persistent volume (through a PVC) for build storage. 
+# Ability to request a persistent volume (through a PVC) for build storage.
 #
 # Lab Setup:
 # 2x Radxa Rock5B 16GB running K3S with storage provided by Longhorn.
@@ -24,25 +24,40 @@
 #
 # Following the log (psbuild64 to follow the aarch64 build, etc):
 # $ kubectl logs -f jobs/psbuild32 -n prusaslicer
-#
-# Selecting the ARM64/aarch64 container:
 # $ kubectl logs -f jobs/psbuild64 -n prusaslicer
 #
-# To extract the AppImages after the build is complete:
+# To extract the AppImages after the build is complete (use release.yml or its variation
+# for publishing):
 # $ kubectl exec psbuild-s652n -n prusaslicer -- bash -c "cd /build/PrusaSlicer-ARM.AppImage/;tar -zcf - *.AppImage" | tar -zxvf - -C ./
 #
-# Jobs persist after completing, removing:
-# kubectl delete -f job.yml -n prusaslicer
+# Jobs persist after completing, to remove it, and any resources created by this file:
+# $ kubectl delete -f job.yml -n prusaslicer
 #
+# Customized Longhorn StorageClass for jobs (replicas are not needed)
+# Uncomment the block below to apply, or change to a different StorageClass
+# $ kubectl get storageclass
+#
+#---
+#kind: StorageClass
+#apiVersion: storage.k8s.io/v1
+#metadata:
+#  name: longhorn-singlereplica
+#provisioner: driver.longhorn.io
+#allowVolumeExpansion: true
+#reclaimPolicy: Delete
+#volumeBindingMode: Immediate
+#parameters:
+#  numberOfReplicas: "1"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: psbuild64-longhorn-pvc
+  namespace: prusaslicer
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: longhorn-singlereplica
   resources:
     requests:
       storage: 20Gi
@@ -51,10 +66,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: psbuild32-longhorn-pvc
+  namespace: prusaslicer
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: longhorn-singlereplica
   resources:
     requests:
       storage: 20Gi
@@ -64,14 +80,24 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: psbuild32
+  namespace: prusaslicer
 spec:
   backoffLimit: 4
   template:
     spec:
       containers:
       - name: psarm32
-        image: ghcr.io/davidk/psarmhf-k8s:latest
-        command: ["setarch","armv7l","./k8s-helper.sh","armhf"]
+        image: docker.io/balenalib/armv7hf-debian
+        command: ["/bin/sh"]
+        args: ["-c","
+          apt-get update;
+          apt-get install -y wget git jq curl python3-pip file;
+          mkdir /ps;
+          cd /ps;
+          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job/containers/k8s-helper.sh;
+          chmod +x ./k8s-helper.sh;
+          setarch armv7l ./k8s-helper.sh armhf;
+        "]
         securityContext:
           privileged: true
           capabilities:
@@ -95,14 +121,24 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: psbuild64
+  namespace: prusaslicer
 spec:
   backoffLimit: 4
   template:
     spec:
       containers:
       - name: psarm64
-        image: ghcr.io/davidk/psarm64-k8s:latest
-        command: ["./k8s-helper.sh","aarch64"]
+        image: docker.io/balenalib/raspberrypi5
+        command: ["/bin/sh"]
+        args: ["-c","
+          apt-get update;
+          apt-get install -y wget git jq curl python3-pip;
+          mkdir /ps;
+          cd /ps;
+          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job/containers/k8s-helper.sh;
+          chmod +x ./k8s-helper.sh;
+          ./k8s-helper.sh aarch64;
+        "]
         imagePullPolicy: Always
         resources:
           requests:
