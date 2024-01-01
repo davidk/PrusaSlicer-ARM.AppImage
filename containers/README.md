@@ -1,12 +1,14 @@
 # PrusaSlicer-ARM.AppImage/containers
 
-Utilities and files to support PrusaSlicer ARM AppImage creation in containers. The reason for this is multi-fold:
+Utilities and files to support PrusaSlicer ARM AppImage creation in containers and on Kubernetes clusters. The reason for this is multi-fold:
 
-- Container environments are more consistent and builds can be done across different host operating systems.
+- Container environments are more consistent and builds can be done across different host operating systems and configurations.
 
-- The build avoids contaminating the host system with build dependencies
+- The build avoids contaminating the host system with build dependencies.
 
-- Finished builds can be tested without installing all dependencies on the build system
+- Finished builds can be tested without installing all dependencies on the build system.
+
+- Kubernetes: Builds are run as jobs, and can be run alongside pre-existing infrastructure/services.
 
 ### End user utilities in this directory
 
@@ -14,7 +16,7 @@ Utilities and files to support PrusaSlicer ARM AppImage creation in containers. 
 
 Input:
 
-  * Accepts the architecture to build for (aarch64/armhf/all) and the PrusaSlicer version to build for
+  * Accepts the architecture to build for (aarch64/armhf/all) and the PrusaSlicer version to build for.
 
 Output:
 
@@ -74,16 +76,24 @@ Example:
 $ ./stage-release.sh ../aarch64-build.log
 ```
 
-# PrusaSlicer-ARM.AppImage/containers/kubernetes
+# PrusaSlicer-ARM.AppImage/containers/k8s
 
-Building container images for Kubernetes:
+It is possible to build PrusaSlicer for ARM on Kubernetes. These are used on a K3S cluster,
+but should work equally well on K8S. Nodes are expected to be aarch64/arm64 architecture
+with at least 8GB+ of memory (~6GB is requested during scheduling) on each node for a build.
+
+More detailed instructions are located in the header of each file.
+
+### k8s-build-job.yml
+
+This builds PrusaSlicer for botht ARM32 (using setarch) and ARM64 in two Kubernetes jobs.
+
+###  k8s-release.yml
+
+This can be used to help push a release up to GitHub. Requires a token to access repository releases (see header for more information).
 
 ```bash
-$ podman build -f Dockerfile.k8s -t localhost/psarm64-k8s .
-$ podman build -f Dockerfile.k8s.armhf -t localhost/psarmhf-k8s .
-
-$ podman login git
-$ podman push localhost/psarmhf-k8s git/davidk/psarmhf-k8s:latest
-$ podman push localhost/psarm64-k8s git/davidk/psarm64-k8s:latest
+$ kubectl create -n prusaslicer -f release.yml; kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && kubectl exec jobs/releaser -n prusaslicer -it -- sh
+$ cd /release
+$ ./stage-release.sh ./[build log file]
 ```
-
