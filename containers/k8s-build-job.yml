@@ -94,7 +94,7 @@ spec:
           apt-get install -y wget git jq curl python3-pip file;
           mkdir /ps;
           cd /ps;
-          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job/containers/k8s-helper.sh;
+          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/main/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
           setarch armv7l ./k8s-helper.sh armhf;
         "]
@@ -135,7 +135,7 @@ spec:
           apt-get install -y wget git jq curl python3-pip;
           mkdir /ps;
           cd /ps;
-          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job/containers/k8s-helper.sh;
+          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/main/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
           ./k8s-helper.sh aarch64;
         "]
