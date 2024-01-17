@@ -84,16 +84,28 @@ with at least 8GB+ of memory (~6GB is requested during scheduling) on each node 
 
 More detailed instructions are located in the header of each file.
 
+```bash
+$ kubectl create ns prusaslicer 
+```
+
 ### k8s-build-job.yml
 
 This builds PrusaSlicer for botht ARM32 (using setarch) and ARM64 in two Kubernetes jobs.
 
-###  k8s-release.yml
+```bash
+$ kubectl apply -f build.yml -n prusaslicer
+```
+
+### k8s-release.yml
 
 This can be used to help push a release up to GitHub. Requires a token to access repository releases (see header for more information).
 
 ```bash
-$ kubectl create -n prusaslicer -f release.yml; kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && kubectl exec jobs/releaser -n prusaslicer -it -- sh
+$ kubectl create -n prusaslicer -f k8s-release.yml; kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && kubectl exec jobs/releaser -n prusaslicer -it -- sh
 $ cd /release
 $ ./stage-release.sh ./[build log file]
 ```
+
+### k8s-helper.sh
+
+This is used from within k8s-build-job.yml to build PrusaSlicer, and it is not intended to be run directly.
