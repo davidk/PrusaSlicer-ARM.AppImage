@@ -1,0 +1,25 @@
+Subject: [PATCH] Add missing include
+
+---
+ src/libslic3r/Geometry/VoronoiUtils.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/libslic3r/Geometry/VoronoiUtils.cpp b/src/libslic3r/Geometry/VoronoiUtils.cpp
+index fae30e0..1e94363 100644
+--- a/src/libslic3r/Geometry/VoronoiUtils.cpp
++++ b/src/libslic3r/Geometry/VoronoiUtils.cpp
+@@ -1,3 +1,5 @@
++#include <boost/log/trivial.hpp>
++
+ #include <Arachne/utils/PolygonsSegmentIndex.hpp>
+ #include <MultiMaterialSegmentation.hpp>
+ 
+@@ -278,4 +280,4 @@ VD::vertex_type VoronoiUtils::make_rotated_vertex(VD::vertex_type &vertex, const
+     return rotated_vertex;
+ }
+ 
+-} // namespace Slic3r::Geometry
+\ No newline at end of file
++} // namespace Slic3r::Geometry
+-- 
+2.30.2
