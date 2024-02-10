@@ -63,5 +63,6 @@ AppDir:
 
 AppImage:
   arch: aarch64
+  comp: zstd
   update-information: guess
 

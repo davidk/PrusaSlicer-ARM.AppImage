@@ -70,5 +70,6 @@ AppDir:
 
 AppImage:
   arch: armhf
+  comp: zstd
   update-information: guess
 
