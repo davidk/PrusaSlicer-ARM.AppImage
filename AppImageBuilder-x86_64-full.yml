@@ -71,6 +71,6 @@ AppDir:
 
 AppImage:
   arch: x86_64
-  comp: zstd
+  comp: xz
   update-information: guess
 
