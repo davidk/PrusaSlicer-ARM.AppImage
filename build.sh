@@ -114,46 +114,49 @@ if ! hash appimage-builder >/dev/null; then
 
   sudo chmod +x /usr/local/bin/appimagetool
 
-    case "${DPKG_ARCH}" in
-      "armhf")
-        # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
-        echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
+  case "${DPKG_ARCH}" in
+    "armhf")
+      # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
+      echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
 
-        if ! pip3 install appimage-builder==0.9.2; then
-          echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
-          exit 1
-        fi
-        ;;
-      "arm64")
-        if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-          echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
-          exit 1
-        fi
-        ;;
-      "amd64")
-        if ! apt-get install -y pipx; then
-          echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
-	  exit 1
-	fi
-
-        if ! pipx install appimage-builder; then
-          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pip3 .."
-          exit 1
-	else
-	  # Add location of installed appimage-builder to PATH if it is not already
-	  pipx ensurepath
-	  [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
-        fi
-	;;
-      *)
-        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH}. Please add support within build.sh."
+      if ! pip3 install appimage-builder==0.9.2; then
+        echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
         exit 1
-        ;;
-    esac
+      fi
+      ;;
+    "arm64")
+      if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
+        echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+        exit 1
+      fi
+      ;;
+    "amd64")
+      if ! apt-get install -y pipx; then
+        echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
+        exit 1
+      fi
+
+      if ! pipx install appimage-builder; then
+        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pip3 .."
+        exit 1
+      else
+        # Add location of installed appimage-builder to PATH if it is not already
+        pipx ensurepath
+        # shellcheck source=/dev/null
+        [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
+      fi
+      ;;
+    *)
+      echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH}. Please add support within build.sh."
+      exit 1
+      ;;
+  esac
   
   if ! hash appimage-builder >/dev/null; then
     echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
     echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
+    # Showing the user how to modify $PATH temporarily
+    # shellcheck disable=SC2016
     echo 'ERROR: hint (to add the path, $HOME/.local/bin to $PATH temporarily): export PATH="$PATH:$HOME/.local/bin"'
     echo "ERROR: Re-run ./$0 if using the above hints"
     exit 1
