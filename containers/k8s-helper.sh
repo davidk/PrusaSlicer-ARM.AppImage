@@ -91,6 +91,7 @@ else
       echo "Installing dependencies for armhf .."
       # Building pip requirements needs a Rust toolchain and an OpenSSL dependency
       curl https://sh.rustup.rs -sSf | sh -s -- -y
+      # shellcheck source=/dev/null
       source "$HOME/.cargo/env"
       apt-get update && apt-get install -y librust-openssl-dev
       echo "Starting automated build for armhf .."

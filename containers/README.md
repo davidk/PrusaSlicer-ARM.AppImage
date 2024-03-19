@@ -4,7 +4,7 @@ Utilities and files to support PrusaSlicer ARM AppImage creation in containers a
 
 - Container environments are more consistent and builds can be done across different host operating systems and configurations.
 
-- The build avoids contaminating the host system with build dependencies.
+- A build avoids contaminating the host system with build dependencies.
 
 - Finished builds can be tested without installing all dependencies on the build system.
 
@@ -90,7 +90,7 @@ $ kubectl create ns prusaslicer
 
 ### k8s-build-job.yml
 
-This builds PrusaSlicer for botht ARM32 (using setarch) and ARM64 in two Kubernetes jobs.
+This builds PrusaSlicer for both ARM32 (using setarch) and ARM64 in two Kubernetes jobs.
 
 ```bash
 $ kubectl apply -f build.yml -n prusaslicer

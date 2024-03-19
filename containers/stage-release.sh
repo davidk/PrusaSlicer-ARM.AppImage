@@ -12,6 +12,7 @@
 # * Allow container-build.sh to finish.
 # * Run this utilitiy with ./stage-release.sh ../aarch64-build.log
 
+# shellcheck source=/dev/null
 source ~/.config/github-token
 
 # Live production repo, change for testing if desired
@@ -79,10 +80,10 @@ fi
 
 echo "Generating SHA256SUMS for AppImages .."
 { opwd="$PWD"; 
-  for fn in ${APPIMAGE_SEARCH[@]}; do
+  for fn in "${APPIMAGE_SEARCH[@]}"; do
     if [[ -d "${fn}" ]]; then
-      cd ${fn}/ || exit;
-      sha256sum *.AppImage; 
+      cd "${fn}/" || exit;
+      sha256sum -- *.AppImage; 
     fi
     cd "$opwd" || exit; 
   done
@@ -90,8 +91,7 @@ echo "Generating SHA256SUMS for AppImages .."
 
 echo "Uploading AppImages and files to release ID ${RELEASE_ID}"
 
-
-for fn in ${APPIMAGE_SEARCH[@]}*.AppImage SHA256SUMS; do
+for fn in "${APPIMAGE_SEARCH[@]}*.AppImage" SHA256SUMS; do
 
   if [[ ! -e "${fn}" ]]; then
     echo "AppImage not found at ${fn} .."
