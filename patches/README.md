@@ -12,7 +12,7 @@ When encountering an error, generate a patch by making changes and committing th
 ```bash
 git add file.txt
 git commit -m 'Fixed an issue in file.txt'
-git format-path 'HEAD^1'
+git format-patch 'HEAD^1'
 0001-Fixed-an-issue-in-file.txt.patch
 ```
 
