@@ -93,7 +93,7 @@ else
       curl https://sh.rustup.rs -sSf | sh -s -- -y
       # shellcheck source=/dev/null
       source "$HOME/.cargo/env"
-      apt-get update && apt-get install -y librust-openssl-dev
+      apt-get update && apt-get install -y librust-openssl-dev procps sudo
       echo "Starting automated build for armhf .."
       { time setarch armv7l -B ./build.sh "automated" || tail -f /dev/null; } |& sed -e 's/^/armhf> /;' |& tee -a "${HOSTNAME}-${build_arch}-k8s-build.log"
     fi
