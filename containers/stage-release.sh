@@ -91,7 +91,7 @@ echo "Generating SHA256SUMS for AppImages .."
 
 echo "Uploading AppImages and files to release ID ${RELEASE_ID}"
 
-for fn in "${APPIMAGE_SEARCH[@]}*.AppImage" SHA256SUMS; do
+for fn in "${APPIMAGE_SEARCH[@]}"*.AppImage SHA256SUMS; do
 
   if [[ ! -e "${fn}" ]]; then
     echo "AppImage not found at ${fn} .."
