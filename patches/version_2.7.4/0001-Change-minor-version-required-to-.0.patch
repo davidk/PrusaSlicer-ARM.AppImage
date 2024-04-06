@@ -1,0 +1,24 @@
+From da5ee6b803806fb84b4bc4147cf0bd2a68615711 Mon Sep 17 00:00:00 2001
+Date: Tue, 19 Mar 2024 09:26:50 +0000
+Subject: [PATCH] Change minor version required to .0
+
+---
+ src/slic3r/GUI/OpenGLManager.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/slic3r/GUI/OpenGLManager.cpp b/src/slic3r/GUI/OpenGLManager.cpp
+index 003538266..e2bebf4ed 100644
+--- a/src/slic3r/GUI/OpenGLManager.cpp
++++ b/src/slic3r/GUI/OpenGLManager.cpp
+@@ -373,7 +373,7 @@ bool OpenGLManager::init_gl()
+ #if ENABLE_OPENGL_ES
+         bool valid_version = s_gl_info.is_version_greater_or_equal_to(2, 0);
+ #elif ENABLE_GL_CORE_PROFILE
+-        const bool valid_version = s_gl_info.is_version_greater_or_equal_to(3, 2);
++        const bool valid_version = s_gl_info.is_version_greater_or_equal_to(3, 0);
+ #else
+         bool valid_version = s_gl_info.is_version_greater_or_equal_to(2, 0);
+ #endif // ENABLE_OPENGL_ES
+-- 
+2.39.2
+
