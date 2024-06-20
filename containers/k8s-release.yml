@@ -1,19 +1,25 @@
-# Job to perform help perform release tasks for PrusaSlicer ARM AppImages
+# Kubernetes Job to perform help perform release tasks for PrusaSlicer ARM AppImages
 #
 # Note that this requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
-# for how to set this.
+# for how to set this up using kubectl.
 #
-# To create on GitHub:
-# Click profile icon > Settings > Developer settings >
-#   Personal access tokens > Fine-grained tokens > Generate new token
-# Permissions required:
+# To create a token for use (on GitHub):
+# Click profile icon > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token
+#
+# Ensure the following permissions are required:
 #   - Read access to metadata
 #   - Read and Write access to administration, code and commit statuses
-# Lock repository access to the repository that AppImages will be released out of.
+# Restrict/lock repository access to the repository that AppImages will be released out of.
+#
+# To insert the secret token into github into k3s/k8s under the prusaslicer namespace:
+# $ kubectl create -n prusaslicer secret generic github-release --from-literal=token='github secret token goes here'
 #
 # Workflow for creating and releasing an AppImage using K3S
 #
-# $ kubectl create -n prusaslicer -f release.yml; kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && kubectl exec jobs/releaser -n prusaslicer -it -- sh
+# $ kubectl create -n prusaslicer -f release.yml; \
+# kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && \
+# kubectl exec jobs/releaser -n prusaslicer -it -- sh
+#
 # Navigate to /release, then run ./stage-release.sh ./[a build.log file]
 #
 ---
