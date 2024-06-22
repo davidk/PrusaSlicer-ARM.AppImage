@@ -19,8 +19,8 @@
 # PrusaSlicer's GitHub API URL
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
-# Dependencies for installation
-DEPS_REQUIRED=(git wget sudo libwebkit2gtk-4.1-dev libgl1-mesa-dev libglu1-mesa-dev \
+# Dependencies for building
+DEPS_REQUIRED=(git wget sudo libwebkit2gtk-4.0-dev libgl1-mesa-dev libglu1-mesa-dev \
 	build-essential cmake python3-pip python3-dev python3-setuptools patchelf \
 	desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev \
 	m4 zstd screen ninja-build squashfs-tools zsync)
