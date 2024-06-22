@@ -1,0 +1,28 @@
+From ed8d3e5c3cb999b6d257970a1971e64098d1cf6f Mon Sep 17 00:00:00 2001
+Date: Sat, 22 Jun 2024 03:45:45 +0000
+Subject: [PATCH] Patch includes
+
+---
+ src/slic3r/GUI/RulerForDoubleSlider.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/slic3r/GUI/RulerForDoubleSlider.cpp b/src/slic3r/GUI/RulerForDoubleSlider.cpp
+index d1d6f2f..f4a3add 100644
+--- a/src/slic3r/GUI/RulerForDoubleSlider.cpp
++++ b/src/slic3r/GUI/RulerForDoubleSlider.cpp
+@@ -3,8 +3,12 @@
+ ///|/ PrusaSlicer is released under the terms of the AGPLv3 or higher
+ ///|/
+ #include "RulerForDoubleSlider.hpp"
++#include "libslic3r/libslic3r.h"
+ #include "libslic3r/CustomGCode.hpp"
+ 
++#include <algorithm>
++#include <cmath>
++
+ using namespace Slic3r;
+ using namespace CustomGCode;
+ 
+-- 
+2.30.2
+
