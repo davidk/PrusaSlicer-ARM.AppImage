@@ -41,6 +41,7 @@ AppDir:
     - libselinux1:arm64
     - libtinfo6:arm64
     - librsvg2-common
+    - libwebkit2gtk-4.0-37:arm64
     exclude:
     - adwaita-icon-theme
     - distro-info-data
