@@ -127,24 +127,21 @@ if ! hash appimage-builder >/dev/null; then
       ;;
     "arm64")
       if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-        echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+        echo "WARN: Unable to install appimage-builder using ${DPKG_ARCH} using pip3. Trying pipx method .."
         if ! apt-get install -y pipx; then
           echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
           exit 1
         fi
-    
-        if ! pipx install appimage-builder; then
-          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
-          exit 1
-        else
+
+        if pipx install appimage-builder; then
           # Add location of installed appimage-builder to PATH if it is not already
           pipx ensurepath
           # shellcheck source=/dev/null
           [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
+        else
+          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
+          exit 1
         fi
-
-        exit 1
-
       fi
       ;;
     "amd64")
@@ -168,7 +165,7 @@ if ! hash appimage-builder >/dev/null; then
       exit 1
       ;;
   esac
-  
+
   if ! hash appimage-builder >/dev/null; then
     echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
     echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
