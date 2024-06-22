@@ -20,7 +20,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for installation
-DEPS_REQUIRED=(libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev libgl1-mesa-dev libglu1-mesa-dev \
+DEPS_REQUIRED=(git wget sudo libwebkit2gtk-4.1-dev libgl1-mesa-dev libglu1-mesa-dev \
 	build-essential cmake python3-pip python3-dev python3-setuptools patchelf \
 	desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev \
 	m4 zstd screen ninja-build squashfs-tools zsync)
@@ -128,7 +128,23 @@ if ! hash appimage-builder >/dev/null; then
     "arm64")
       if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
         echo "ERROR: Unable to install appimage-builder using ${DPKG_ARCH} using pip3 .."
+        if ! apt-get install -y pipx; then
+          echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
+          exit 1
+        fi
+    
+        if ! pipx install appimage-builder; then
+          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
+          exit 1
+        else
+          # Add location of installed appimage-builder to PATH if it is not already
+          pipx ensurepath
+          # shellcheck source=/dev/null
+          [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
+        fi
+
         exit 1
+
       fi
       ;;
     "amd64")
@@ -138,7 +154,7 @@ if ! hash appimage-builder >/dev/null; then
       fi
 
       if ! pipx install appimage-builder; then
-        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pip3 .."
+        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
         exit 1
       else
         # Add location of installed appimage-builder to PATH if it is not already
