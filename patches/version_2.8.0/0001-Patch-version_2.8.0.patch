@@ -1,0 +1,41 @@
+From 3e0d859951c59b7e7dc848abe9315d27de345211 Mon Sep 17 00:00:00 2001
+Date: Sat, 29 Jun 2024 08:20:41 +0000
+Subject: [PATCH] Patch version_2.8.0
+
+Using patches from upstream issue 12334
+---
+ src/libvgcode/glad/include/glad/gles2.h  | 4 ++++
+ src/slic3r/GUI/Gizmos/GLGizmoMeasure.cpp | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/src/libvgcode/glad/include/glad/gles2.h b/src/libvgcode/glad/include/glad/gles2.h
+index 2983e1d..5691317 100644
+--- a/src/libvgcode/glad/include/glad/gles2.h
++++ b/src/libvgcode/glad/include/glad/gles2.h
+@@ -87,6 +87,10 @@ extern "C" {
+   #endif
+ #endif
+ 
++#ifndef GLAD_GLES2_USE_SYSTEM_EGL
++  #define GLAD_GLES2_USE_SYSTEM_EGL 1
++#endif
++
+ #ifndef GLAD_PLATFORM_UWP
+   #if defined(_MSC_VER) && !defined(GLAD_INTERNAL_HAVE_WINAPIFAMILY)
+     #ifdef __has_include
+diff --git a/src/slic3r/GUI/Gizmos/GLGizmoMeasure.cpp b/src/slic3r/GUI/Gizmos/GLGizmoMeasure.cpp
+index 2e60f16..e59f559 100644
+--- a/src/slic3r/GUI/Gizmos/GLGizmoMeasure.cpp
++++ b/src/slic3r/GUI/Gizmos/GLGizmoMeasure.cpp
+@@ -1561,7 +1561,9 @@ void GLGizmoMeasure::render_dimensioning()
+         const Vec3d label_position_world = Geometry::translation_transform(center) * (draw_radius * (Eigen::Quaternion<double>(Eigen::AngleAxisd(step * 0.5 * double(resolution), normal)) * e1_unit));
+ 
+         // label screen coordinates
++        #if !SLIC3R_OPENGL_ES
+         const std::array<int, 4>& viewport = camera.get_viewport();
++        #endif
+         const Vec2d label_position_ss = TransformHelper::world_to_ss(label_position_world,
+             camera.get_projection_matrix().matrix() * camera.get_view_matrix().matrix(), viewport);
+ 
+-- 
+2.43.0

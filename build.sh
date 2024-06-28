@@ -20,7 +20,7 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for building
-DEPS_REQUIRED=(git wget sudo libwebkit2gtk-4.0-dev libgl1-mesa-dev libglu1-mesa-dev \
+DEPS_REQUIRED=(git wget sudo libgl1-mesa-dev libglu1-mesa-dev \
 	build-essential cmake python3-pip python3-dev python3-setuptools patchelf \
 	desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev \
 	m4 zstd screen ninja-build squashfs-tools zsync)
@@ -134,10 +134,9 @@ if ! hash appimage-builder >/dev/null; then
         fi
 
         if pipx install appimage-builder; then
-          # Add location of installed appimage-builder to PATH if it is not already
           pipx ensurepath
-          # shellcheck source=/dev/null
-          [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
+          export PATH="$PATH:/$(whoami)/.local/bin"
+          sed -i '/^\s*comp:/d'
         else
           echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
           exit 1
@@ -150,14 +149,12 @@ if ! hash appimage-builder >/dev/null; then
         exit 1
       fi
 
-      if ! pipx install appimage-builder; then
+      if pipx install appimage-builder; then
+        pipx ensurepath
+        export PATH="$PATH:/$(whoami)/.local/bin"
+      else
         echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
         exit 1
-      else
-        # Add location of installed appimage-builder to PATH if it is not already
-        pipx ensurepath
-        # shellcheck source=/dev/null
-        [[ -f "$HOME/.bashrc" ]] && source ~/.bashrc
       fi
       ;;
     *)
@@ -291,12 +288,13 @@ cd build && \
 rm -rf AppDir && \
 cmake .. \
 -GNinja \
+-DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_INSTALL_PREFIX=/usr \
 -DCMAKE_PREFIX_PATH="$(pwd)/../deps/build/destdir/usr/local" \
--DSLIC3R_PCH=OFF \
--DSLIC3R_STATIC=ON \
 -DSLIC3R_GTK=3 \
--DCMAKE_BUILD_TYPE=Release
+-DSLIC3R_OPENGL_ES=1 \
+-DSLIC3R_PCH=OFF \
+-DSLIC3R_STATIC=ON
 
 cd ../..
 
@@ -311,6 +309,12 @@ for build_type in ${APPIMAGE_BUILD_TYPE}; do
       exit 1;
     fi
   else
+    if [[ -e "/$(whoami)/.local/bin/appimage-builder" ]]; then
+      # detect pipx versions which are more recent and reject the comp: parameter
+      echo "comp: parameter removed from appimage"
+      sed -i '/^\s*comp:/d' "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+    fi
+
     if ! appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
       echo "Failed to generate AppImage. Please check log output."
       exit 1;
@@ -385,6 +389,4 @@ After downloading the AppImage and installing dependencies, make the AppImage ex
     $ ./PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
 
 **\`Minimal versions\`** These AppImages include fewer dependencies to reduce size but may not be compatible with older distributions.
-
-All images were built on the Radxa Rock5B platform, optioned with 16GB of RAM and NVMe storage. Additional testing is done on Raspberry Pi 4Bs using Raspberry Pi OS Desktop 64-bit and 32-bit.
 EOF

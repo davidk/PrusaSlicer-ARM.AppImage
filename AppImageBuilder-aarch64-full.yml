@@ -41,7 +41,8 @@ AppDir:
     - libselinux1:arm64
     - libtinfo6:arm64
     - librsvg2-common
-    - libwebkit2gtk-4.0-37:arm64
+    - libwebkit2gtk-4.0-37
+    - libwebkit2gtk-4.0-dev
     exclude:
     - adwaita-icon-theme
     - distro-info-data
@@ -73,6 +74,5 @@ AppDir:
 
 AppImage:
   arch: aarch64
-  comp: xz
   update-information: guess
 
