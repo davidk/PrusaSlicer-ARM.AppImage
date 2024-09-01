@@ -14,6 +14,9 @@
 # To insert the secret token into github into k3s/k8s under the prusaslicer namespace:
 # $ kubectl create -n prusaslicer secret generic github-release --from-literal=token='github secret token goes here'
 #
+# To update the secret token, edit the secret and replace the base64 encoded token with a new one (also base64 encoded):
+# $ kubectl edit -n prusaslicer secret github-release 
+#
 # Workflow for creating and releasing an AppImage using K3S
 #
 # $ kubectl create -n prusaslicer -f release.yml; \
