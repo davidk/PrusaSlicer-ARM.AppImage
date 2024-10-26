@@ -22,47 +22,48 @@ AppDir:
     exec_args: $@
   apt:
     arch:
-    - arm64
+      - arm64
     allow_unauthenticated: true
     sources:
-    - sourceline: deb http://deb.debian.org/debian bullseye main contrib non-free
-    - sourceline: deb http://security.debian.org/debian-security bullseye-security
-        main contrib non-free
-    - sourceline: deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-    - sourceline: deb http://archive.raspberrypi.org/debian/ bullseye main
+      - sourceline: deb http://deb.debian.org/debian bullseye main contrib non-free
+      - sourceline:
+          deb http://security.debian.org/debian-security bullseye-security
+          main contrib non-free
+      - sourceline: deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+      - sourceline: deb http://archive.raspberrypi.org/debian/ bullseye main
     include:
-    - libc6:arm64
+      - libc6:arm64
+      - libgnutls30:arm64
     exclude:
-    - adwaita-icon-theme
-    - distro-info-data
-    - fonts-liberation2
-    - fonts-piboto
-    - gnome-icon-theme
-    - gvfs:arm64
-    - hicolor-icon-theme
-    - locales
-    - lsb-release
-    - pixflat-icons
-    - python3-logilab-common
-    - raspberrypi-ui-mods
+      - adwaita-icon-theme
+      - distro-info-data
+      - fonts-liberation2
+      - fonts-piboto
+      - gnome-icon-theme
+      - gvfs:arm64
+      - hicolor-icon-theme
+      - locales
+      - lsb-release
+      - pixflat-icons
+      - python3-logilab-common
+      - raspberrypi-ui-mods
   files:
     include:
-    - /lib/aarch64-linux-gnu/libstdc++.so.6
-    - /lib/aarch64-linux-gnu/libpthread.so.0
-    - /lib/aarch64-linux-gnu/libm.so.6
-    - /usr/lib/aarch64-linux-gnu/libstdc++.so.6
-    - /lib/aarch64-linux-gnu/libc.so.6
+      - /lib/aarch64-linux-gnu/libstdc++.so.6
+      - /lib/aarch64-linux-gnu/libpthread.so.0
+      - /lib/aarch64-linux-gnu/libm.so.6
+      - /usr/lib/aarch64-linux-gnu/libstdc++.so.6
+      - /lib/aarch64-linux-gnu/libc.so.6
     exclude:
-    - lib/aarch64-linux-gnu/libmali.so.1
-    - usr/share/man
-    - usr/share/doc/*/README.*
-    - usr/share/doc/*/changelog.*
-    - usr/share/doc/*/NEWS.*
-    - usr/share/doc/*/TODO.*
-    - usr/share/locale
+      - lib/aarch64-linux-gnu/libmali.so.1
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
+      - usr/share/locale
 
 AppImage:
   arch: aarch64
   comp: xz
   update-information: guess
-
