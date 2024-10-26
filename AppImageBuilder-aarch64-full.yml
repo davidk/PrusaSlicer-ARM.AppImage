@@ -39,7 +39,6 @@ AppDir:
       - libpcre3:arm64
       - libselinux1:arm64
       - libtinfo6:arm64
-      - libgnutls30:arm64
     exclude:
       - adwaita-icon-theme
       - distro-info-data
@@ -53,6 +52,7 @@ AppDir:
       - pixflat-icons
       - python3-logilab-common
       - raspberrypi-ui-mods
+      - libgnutls30:arm64
   files:
     include:
       - /lib/aarch64-linux-gnu/libstdc++.so.6
