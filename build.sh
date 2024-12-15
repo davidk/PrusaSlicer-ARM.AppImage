@@ -134,6 +134,9 @@ if ! hash appimage-builder >/dev/null; then
         fi
 
         if pipx install appimage-builder; then
+          # 12/15/2024: Downgrade due to segfault in _lief.so 0.16.0
+          # std::locale::_Impl::_M_remove_reference()
+          pipx runpip appimage-builder install lief==0.15.1
           pipx ensurepath
           export PATH="$PATH:/$(whoami)/.local/bin"
           sed -i '/^\s*comp:/d'
