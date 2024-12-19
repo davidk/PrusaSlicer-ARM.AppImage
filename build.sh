@@ -336,9 +336,19 @@ ${LATEST_VERSION}
 
 PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
 
-_Prusa Research has released their own [AppImages for ARM](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). It is advisable to switch to these official builds for the best experience when/if available for your platform._
-
 This release tracks PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). AppImages are built using appimage-builder (with PrusaSlicer's dependencies) for broader compatibility at the cost of an increased AppImage size.
+
+- AppImage to download will depend on version of libwebkit2gtk (latestOS for libwebkit2gtk-4.1)
+
+##### libwebkit2gtk
+
+It might be necessary to install \`libwebkit2gtk\`, as it cannot currently be provided with the AppImage:
+
+\`\`\`bash
+libwebkit2gtk-4.0-37 - Web content engine library for GTK
+libwebkit2gtk-4.1-0 - Web content engine library for GTK
+$ sudo apt-get install libwebkit2gtk-4.0-37 
+\`\`\`
 
 ### AppImage selection
 
@@ -381,15 +391,8 @@ For other Raspberry Pi OS distributions, more dependencies on the host may be ne
 
 After downloading the AppImage and installing dependencies, make the AppImage executable and run the AppImage to launch PrusaSlicer:
 
-32-bit:
-
-    $ chmod +x PrusaSlicer-${LATEST_VERSION}-armhf.AppImage
-    $ ./PrusaSlicer-${LATEST_VERSION}-armhf.AppImage
-
-64-bit:
-
-    $ chmod +x PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
-    $ ./PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
+    $ chmod +x PrusaSlicer-${LATEST_VERSION}-[...].AppImage
+    $ ./PrusaSlicer-${LATEST_VERSION}-[...].AppImage
 
 **\`Minimal versions\`** These AppImages include fewer dependencies to reduce size but may not be compatible with older distributions.
 EOF
