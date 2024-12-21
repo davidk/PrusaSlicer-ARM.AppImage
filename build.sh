@@ -126,25 +126,26 @@ if ! hash appimage-builder >/dev/null; then
       fi
       ;;
     "arm64")
-      if ! pip3 install git+https://github.com/AppImageCrafters/appimage-builder.git; then
-        echo "WARN: Unable to install appimage-builder using ${DPKG_ARCH} using pip3. Trying pipx method .."
-        if ! apt-get install -y pipx; then
-          echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
-          exit 1
-        fi
-
-        if pipx install appimage-builder; then
-          # 12/15/2024: Downgrade due to segfault in _lief.so 0.16.0
-          # std::locale::_Impl::_M_remove_reference()
-          pipx runpip appimage-builder install lief==0.15.1
-          pipx ensurepath
-          export PATH="$PATH:/$(whoami)/.local/bin"
-          sed -i '/^\s*comp:/d'
-        else
-          echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
-          exit 1
-        fi
+      if ! apt-get install -y pipx; then
+        echo "WARN: Unable to install pipx via apt-get for ${DPKG_ARCH} .."
+          if ! pip3 install pipx; then
+            echo "ERROR: Unable to install pipx .."
+            exit 1
+          fi
       fi
+
+      if pipx install appimage-builder; then
+        # 12/15/2024: Downgrade due to segfault in _lief.so 0.16.0
+        # std::locale::_Impl::_M_remove_reference()
+        pipx runpip appimage-builder install lief==0.14.1
+        pipx ensurepath
+        export PATH="$PATH:/$(whoami)/.local/bin"
+        sed -i '/^\s*comp:/d'
+      else
+        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
+        exit 1
+      fi
+      
       ;;
     "amd64")
       if ! apt-get install -y pipx; then
