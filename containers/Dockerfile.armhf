@@ -12,13 +12,16 @@
 # $ time podman run --device /dev/fuse --cap-add SYS_ADMIN -it -v $PWD:/ps:z psbuilder
 #
 # AppImage files should be written to your directory
-FROM docker.io/balenalib/armv7hf-debian
+FROM ghcr.io/dtcooper/raspberrypi-os:bookworm
 
-RUN apt-get update && apt-get install -y wget git file jq curl
+RUN apt-get update && apt-get install -y sudo wget git jq curl python3-pip libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake libboost-nowide-dev
 
 WORKDIR /ps
 
 COPY ./build.sh /ps/build.sh
 RUN chmod +x ./build.sh && ./build.sh dependencies && rm -f ./build.sh
+
+# for boost zip unarchiving
+ENV LANG=C.UTF-8
 
 CMD ["./build.sh","automated"]
