@@ -39,6 +39,8 @@ AppDir:
       - libpcre3:arm64
       - libselinux1:arm64
       - libtinfo6:arm64
+      - libwebkit2gtk-4.0-dev
+      - libwebkit2gtk-4.1-dev
     exclude:
       - adwaita-icon-theme
       - distro-info-data

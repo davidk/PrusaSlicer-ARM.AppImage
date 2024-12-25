@@ -33,6 +33,8 @@ AppDir:
       - sourceline: deb http://archive.raspberrypi.org/debian/ bullseye main
     include:
       - libc6:arm64
+      - libwebkit2gtk-4.0-dev
+      - libwebkit2gtk-4.1-dev
     exclude:
       - adwaita-icon-theme
       - distro-info-data
