@@ -20,11 +20,10 @@
 LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 
 # Dependencies for building
-DEPS_REQUIRED=(git wget sudo libgl1-mesa-dev libglu1-mesa-dev \
-	build-essential cmake python3-pip python3-dev python3-setuptools patchelf \
-	desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse libgtk-3-dev \
-	m4 zstd screen ninja-build squashfs-tools zsync libboost-nowide-dev)
-
+DEPS_REQUIRED=(build-essential cmake desktop-file-utils fakeroot fuse git libboost-nowide-dev libgdk-pixbuf2.0-dev \
+  libgl1-mesa-dev libglu1-mesa-dev libgtk-3-dev m4 ninja-build patchelf python3-dev python3-pip python3-setuptools \
+  screen squashfs-tools strace sudo wget zstd zsync)
+  
 if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
 fi
@@ -88,95 +87,53 @@ if ! sudo apt-get install -y "${DEPS_REQUIRED[@]}"; then
 fi
 
 echo
-echo "Dependencies installed. Proceeding with installation .."
+echo "System dependencies installed. Proceeding with installation of Appimage utilities .."
 echo
 
-if ! hash appimage-builder >/dev/null; then
-  echo
 
-  if [[ -v AUTO ]]; then
-    REPLY="y"
-  else
-    read -p "appimage-builder and appimage-tool are not installed. They are required for the build process. May I install them? [N/y] " -n 1 -r
-  fi
-
-  if ! [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Ok. Exiting here."
-    exit 1
-  fi
-
-  echo
-  echo "Thanks, i'll get both installed .. "
-
-  if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
-    echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
-    exit 1
-  fi
-
-  sudo chmod +x /usr/local/bin/appimagetool
-
-  case "${DPKG_ARCH}" in
-    "armhf")
-      # 2023-02-06: Installing an older version to work around upstream issue where interpreter does not get placed into AppImages properly.
-      echo "Installing older version of appimage-builder to work around upstream issue for armhf .."
-
-      if ! pip3 install appimage-builder==0.9.2; then
-        echo "ERROR: Unable to install appimage-builder v0.9.2 for ${DPKG_ARCH} using pip3 .."
-        exit 1
-      fi
-      ;;
-    "arm64")
-      if ! apt-get install -y pipx; then
-        echo "WARN: Unable to install pipx via apt-get for ${DPKG_ARCH} .."
-          if ! pip3 install pipx; then
-            echo "ERROR: Unable to install pipx .."
-            exit 1
-          fi
-      fi
-
-      if pipx install appimage-builder; then
-        # 12/15/2024: Downgrade due to segfault in _lief.so 0.16.0
-        # std::locale::_Impl::_M_remove_reference()
-        pipx runpip appimage-builder install lief==0.14.1
-        pipx ensurepath
-        export PATH="$PATH:/$(whoami)/.local/bin"
-        sed -i '/^\s*comp:/d'
-      else
-        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
-        exit 1
-      fi
-      
-      ;;
-    "amd64")
-      if ! apt-get install -y pipx; then
-        echo "ERROR: Unable to install pipx for ${DPKG_ARCH} .."
-        exit 1
-      fi
-
-      if pipx install appimage-builder; then
-        pipx ensurepath
-        export PATH="$PATH:/$(whoami)/.local/bin"
-      else
-        echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH} using pipx .."
-        exit 1
-      fi
-      ;;
-    *)
-      echo "ERROR: Unable to install appimage-builder for ${DPKG_ARCH}. Please add support within build.sh."
-      exit 1
-      ;;
-  esac
-
-  if ! hash appimage-builder >/dev/null; then
-    echo "ERROR: appimage-builder was installed but could not be found in your PATH: ${PATH}."
-    echo "ERROR: hint (to find where appimage-builder was installed to): find ~/ -name appimage-builder"
-    # Showing the user how to modify $PATH temporarily
-    # shellcheck disable=SC2016
-    echo 'ERROR: hint (to add the path, $HOME/.local/bin to $PATH temporarily): export PATH="$PATH:$HOME/.local/bin"'
-    echo "ERROR: Re-run ./$0 if using the above hints"
-    exit 1
-  fi
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -p "Install appimagetool? [N/y] " -n 1 -r
 fi
+
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "Ok. Exiting here."
+  exit 1
+fi
+
+echo
+echo "Thanks! Installing appimagetool ... "
+
+if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
+  echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
+  exit 1
+fi
+
+if [[ -v AUTO ]]; then
+  REPLY="y"
+else
+  read -p "Install sharun? [N/y] " -n 1 -r
+fi
+
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "Ok. Exiting here."
+  exit 1
+fi
+
+echo
+echo "Thanks! Installing sharun ... "
+
+if ! sudo wget https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin -O /usr/local/bin/lib4bin; then
+  echo "ERROR: Unable to download sharun for ${APPIMAGE_ARCH}."
+  exit 1
+else
+  chmod +x /usr/local/bin/lib4bin
+fi
+
+echo
+echo "Appimage tooling installed. Installing utilities to interact with Github's API ..."
+echo
 
 if ! hash jq curl >/dev/null; then
   echo
@@ -302,31 +259,33 @@ cmake .. \
 
 cd ../..
 
-for build_type in ${APPIMAGE_BUILD_TYPE}; do
-  cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-  sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+#TODO(davidk): Replace this entire block with packaging for PrusaSlicer
 
-  if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
-    # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
-    if ! appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
-      echo "Failed to generate AppImage. Please check log output."
-      exit 1;
-    fi
-  else
-    if [[ -e "/$(whoami)/.local/bin/appimage-builder" ]]; then
-      # detect pipx versions which are more recent and reject the comp: parameter
-      echo "comp: parameter removed from appimage"
-      sed -i '/^\s*comp:/d' "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-    fi
+# for build_type in ${APPIMAGE_BUILD_TYPE}; do
+#   cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+#   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
 
-    if ! appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
-      echo "Failed to generate AppImage. Please check log output."
-      exit 1;
-    fi
-  fi
+#   if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
+#     # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
+#     if ! appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
+#       echo "Failed to generate AppImage. Please check log output."
+#       exit 1;
+#     fi
+#   else
+#     if [[ -e "/$(whoami)/.local/bin/appimage-builder" ]]; then
+#       # detect pipx versions which are more recent and reject the comp: parameter
+#       echo "comp: parameter removed from appimage"
+#       sed -i '/^\s*comp:/d' "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+#     fi
 
-  rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-done
+#     if ! appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
+#       echo "Failed to generate AppImage. Please check log output."
+#       exit 1;
+#     fi
+#   fi
+
+#   rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+# done
 
 echo "Finished build process for PrusaSlicer and arch $(uname -m)."
 
