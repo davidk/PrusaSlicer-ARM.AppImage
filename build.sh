@@ -22,7 +22,8 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 # Dependencies for building
 DEPS_REQUIRED=(build-essential cmake desktop-file-utils fakeroot fuse git libboost-nowide-dev libgdk-pixbuf2.0-dev \
   libgl1-mesa-dev libglu1-mesa-dev libgtk-3-dev m4 ninja-build patchelf python3-dev python3-pip python3-setuptools \
-  screen squashfs-tools strace sudo wget zstd zsync)
+  screen squashfs-tools strace sudo wget zstd zsync libwebkit2gtk-4.1-dev libwxgtk-media3.2-dev xvfb file binutils \
+  patchelf findutils grep sed coreutils strace rsync)
   
 if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
@@ -105,15 +106,19 @@ fi
 echo
 echo "Thanks! Installing appimagetool ... "
 
-if ! sudo wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
-  echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
-  exit 1
+if [[ ! -e "/usr/local/bin/appimagetool" ]]; then
+  if ! sudo wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage -O /usr/local/bin/appimagetool; then
+    echo "ERROR: Unable to download appimagetool for ${APPIMAGE_ARCH}."
+    exit 1
+  fi
 fi
+
+sudo chmod +x /usr/local/bin/appimagetool
 
 if [[ -v AUTO ]]; then
   REPLY="y"
 else
-  read -p "Install sharun? [N/y] " -n 1 -r
+  read -p "Install lib4bin? [N/y] " -n 1 -r
 fi
 
 if ! [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -122,14 +127,16 @@ if ! [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo
-echo "Thanks! Installing sharun ... "
+echo "Thanks! Installing lib4bin ... "
 
-if ! sudo wget https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin -O /usr/local/bin/lib4bin; then
-  echo "ERROR: Unable to download sharun for ${APPIMAGE_ARCH}."
-  exit 1
-else
-  chmod +x /usr/local/bin/lib4bin
+if [[ ! -e "/usr/local/bin/lib4bin" ]]; then
+  if ! sudo wget https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin -O /usr/local/bin/lib4bin; then
+    echo "ERROR: Unable to download lib4bin for ${APPIMAGE_ARCH}."
+    exit 1
+  fi
 fi
+
+sudo chmod +x /usr/local/bin/lib4bin
 
 echo
 echo "Appimage tooling installed. Installing utilities to interact with Github's API ..."
@@ -213,27 +220,6 @@ else
 fi
 
 echo
-if [[ -v AUTO ]]; then
-  REPLY="y"
-else
-  read -n 1 -p "The builder offers a choice between a minimal and full version (saving around 25MB). Building [a]ll versions is the default, but building with the (f)ull or (m)inimal version only is also possible. Please select a version (a)ll [default], (f)ull or (m)inimal? " -r
-fi
-
-case "${REPLY}" in
-  m|minimal)
-    APPIMAGE_BUILD_TYPE="minimal"
-    ;;
-  f|full)
-    APPIMAGE_BUILD_TYPE="full"
-    ;;
-  *)
-    APPIMAGE_BUILD_TYPE="minimal full"
-    ;;
-esac
-
-echo
-echo "Generating [${APPIMAGE_BUILD_TYPE}] build(s) for ${APPIMAGE_ARCH}"
-echo
 
 [[ -d "./PrusaSlicer" ]] || git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "${LATEST_VERSION}" --depth 1 PrusaSlicer && \
 cd PrusaSlicer && \
@@ -259,100 +245,76 @@ cmake .. \
 
 cd ../..
 
-#TODO(davidk): Replace this entire block with packaging for PrusaSlicer
+# Install PrusaSlicer into AppDir
+mkdir -p PrusaSlicer/build
+cd PrusaSlicer/build || exit
+if ! cmake --build ./ --target install -j "$(nproc)"; then
+  echo "Error building .." 
+  exit 0;
+fi
 
-# for build_type in ${APPIMAGE_BUILD_TYPE}; do
-#   cp -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}.yml" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-#   sed -i "s#%%VERSION%%#${LATEST_VERSION}#g" "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
+# Build AppImage based off of system-level install
+make install
 
-#   if [[ "${APPIMAGE_ARCH}" == "armhf" ]]; then
-#     # 2023-03-06: Older appimage-builder does not have appdir and finds directory OK
-#     if ! appimage-builder --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
-#       echo "Failed to generate AppImage. Please check log output."
-#       exit 1;
-#     fi
-#   else
-#     if [[ -e "/$(whoami)/.local/bin/appimage-builder" ]]; then
-#       # detect pipx versions which are more recent and reject the comp: parameter
-#       echo "comp: parameter removed from appimage"
-#       sed -i '/^\s*comp:/d' "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-#     fi
+set -x
+export PACKAGE="PrusaSlicer"
+export DESKTOP="/usr/resources/applications/PrusaSlicer.desktop"
+export ICON="/usr/resources/icons/PrusaSlicer.png"
+export GITHUB_REPOSITORY="davidk/PrusaSlicer-ARM.AppImage"
+export UPINFO="gh-releases-zsync|$(echo ${GITHUB_REPOSITORY} | tr '/' '|')|continuous|*${ARCH}.AppImage.zsync"
 
-#     if ! appimage-builder --appdir ./PrusaSlicer/build/AppDir --recipe "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"; then
-#       echo "Failed to generate AppImage. Please check log output."
-#       exit 1;
-#     fi
-#   fi
+ARCH="$(uname -m)"
+export ARCH
+export APPIMAGE_EXTRACT_AND_RUN=1
 
-#   rm -f "AppImageBuilder-${APPIMAGE_ARCH}-${build_type}-${LATEST_VERSION}.yml"
-# done
+export APPIMAGETOOL="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${ARCH}.AppImage"
+export LIB4BN="https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin"
 
-echo "Finished build process for PrusaSlicer and arch $(uname -m)."
+mkdir -p AppDir && cd AppDir || exit
+mkdir -p shared/lib/             \
+        usr/share/applications/  \
+        etc/                     \
+        usr/resources//
 
-echo "Here's some information to help with generating and posting a release on GitHub:"
+# Move assets for portability
+cp -av /usr/resources/*                              ./usr/resources/
+cp /usr/resources/applications/PrusaSlicer.desktop   ./
+cp /usr/resources/icons/PrusaSlicer.png              ./
 
-cat <<EOF
-${LATEST_VERSION}
+ln -fs ./usr/share                                   ./share
+ln -fs ./usr/resources                               ./resources
+ln -fs ./shared/lib                                  ./lib
 
-PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
+xvfb-run -a -- /usr/local/bin/lib4bin -p -v -e -s -k  \
+        /usr/bin/prusa-gcodeviewer                    \
+        /usr/bin/prusa-slicer                         \
+        /usr/lib/"${ARCH}"-linux-gnu/webkit2gtk-4.1/* \
+        /usr/lib/"${ARCH}"-linux-gnu/libnss*          \
+        /usr/lib/"${ARCH}"-linux-gnu/gio/*            \
+        /usr/share/glib-2.0                           \
+        /usr/share/glvnd/*                            \
+        /usr/lib/"${ARCH}"-linux-gnu/dri/* 
 
-This release tracks PrusaSlicer's [upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). AppImages are built using appimage-builder (with PrusaSlicer's dependencies) for broader compatibility at the cost of an increased AppImage size.
+cp /usr/bin/OCCTWrapper.so ./bin/
 
-- AppImage to download will depend on version of libwebkit2gtk (latestOS for libwebkit2gtk-4.1)
-
-##### libwebkit2gtk
-
-It might be necessary to install \`libwebkit2gtk\`, as it cannot currently be provided with the AppImage:
-
-\`\`\`bash
-libwebkit2gtk-4.0-37 - Web content engine library for GTK
-libwebkit2gtk-4.1-0 - Web content engine library for GTK
-$ sudo apt-get install libwebkit2gtk-4.0-37 
-\`\`\`
-
-### AppImage selection
-
-Run the following in a terminal:
-
-\`\`\`bash
-pi@raspberry:~$ uname -m
-aarch64
-\`\`\`
-
-If the command does not print aarch64 (or arm64), grab an \`armhf\` AppImage.
-
-#### Architectures
-
-##### armhf
-
-armhf distributions are for 32-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-armhf.AppImage\`
-
-##### arm64 / aarch64
-
-These are for 64-bit distributions, ex: \`PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage\`
-
-### How do I run the AppImage?
-
-##### Install dependencies
-
-Raspberry Pi OS **Bookwoorm** users: You may need to set your locale to UTF-8 if an error occurs after launching. On the desktop: \`Preferences > Raspberry Pi Configuration > Localization > Set Locale > Character Set > UTF-8\`. Reboot when prompted.
-
-Bookworm also needs the libfuse2 package:
-
-    sudo apt-get install -y libfuse2
-
-For other Raspberry Pi OS distributions, more dependencies on the host may be needed. Run the following in a terminal to install them:
-
-	sudo apt-get install -y git cmake libboost-dev libboost-regex-dev libboost-filesystem-dev \\
-	libboost-thread-dev libboost-log-dev libboost-locale-dev libcurl4-openssl-dev build-essential \\
-	pkg-config libtbb-dev zlib1g-dev libcereal-dev libeigen3-dev libnlopt-cxx-dev \\
-	libudev-dev libopenvdb-dev libboost-iostreams-dev libgmpxx4ldbl libnlopt-dev \\
-	libdbus-1-dev imagemagick libgtk2.0-dev libgtk-3-dev libwxgtk3.0-gtk3-dev fuse libfuse2
-
-After downloading the AppImage and installing dependencies, make the AppImage executable and run the AppImage to launch PrusaSlicer:
-
-    $ chmod +x PrusaSlicer-${LATEST_VERSION}-[...].AppImage
-    $ ./PrusaSlicer-${LATEST_VERSION}-[...].AppImage
-
-**\`Minimal versions\`** These AppImages include fewer dependencies to reduce size but may not be compatible with older distributions.
+# Create environment
+cat > .env <<'EOF'
+SHARUN_WORKING_DIR=${SHARUN_DIR}
+LIBGL_DRIVERS_PATH=${SHARUN_DIR}/shared/lib/dri
+GSETTINGS_BACKEND=memory
+unset LD_LIBRARY_PATH
+unset LD_PRELOAD
 EOF
+
+wget -c "https://github.com/VHSgunzo/sharun/releases/download/v0.4.3/sharun-$(uname -m)-upx" -O ./sharun || true
+chmod +x ./sharun && ln ./sharun ./AppRun
+./sharun -g || true 
+
+/usr/local/bin/appimagetool \
+  --comp zstd \
+  --mksquashfs-opt -Xcompression-level --mksquashfs-opt 22 \
+  -n -u "${UPINFO}" ./ "${PACKAGE}-${LATEST_VERSION#version_}-${ARCH}-full.AppImage"
+
+mv ./*.AppImage* ../../../
+
+echo "Finished build process for PrusaSlicer and arch ${ARCH}. AppImage is: PrusaSlicer-${LATEST_VERSION#version_}-${ARCH}-full.AppImage"
