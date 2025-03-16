@@ -1,37 +1,36 @@
 # This is a Kubernetes job that builds PrusaSlicer
 #
 # Requirements:
-# Kubernetes Cluster with ARM nodes, nodes should have at least >6Gb RAM.
-# Ability to request a persistent volume (through a PVC) for build storage.
+# * Kubernetes Cluster with ARM nodes, nodes should have at least >= 16Gb RAM.
+# * Ability to request a persistent volume (through a PVC) for build storage.
 #
 # Lab setup:
-# 4x Turing Pi RK1 32GB running K3S with storage provided by Longhorn
-# 1x Radxa Rock5B 32GB 
+# * 4x Turing Pi RK1 32GB - running K3S with storage provided by Longhorn (NVMe drives + SSD over SATA)
+# * 1x Radxa Rock5B 32GB 
 #
 # Creating the namespace:
 # $ kubectl create ns prusaslicer
 #
-# Launch job:
+# Launching the job:
 # $ kubectl apply -f k8s-build-job.yml -n prusaslicer
 #
-# Get job details:
+# Getting job details:
 # $ kubectl get job -n prusaslicer
 #
 # Getting the pods:
-# $ kubectl get pods --selector=job-name=psbuild32 -n prusaslicer
+# $ kubectl get pods --selector=job-name=psbuild64 -n prusaslicer
 # NAME            READY   STATUS    RESTARTS   AGE
-# psbuild-s652n   1/1     Running   0          129m
+# psbuild64-s652n   1/1     Running   0          129m
 #
 # Following the log (psbuild64 to follow the aarch64 build, etc):
-# $ kubectl logs -f jobs/psbuild32 -n prusaslicer
 # $ kubectl logs -f jobs/psbuild64 -n prusaslicer
 #
 # To extract the AppImages after the build is complete (use release.yml or its variation
 # for publishing):
-# $ kubectl exec psbuild-s652n -n prusaslicer -- bash -c "cd /build/PrusaSlicer-ARM.AppImage/;tar -zcf - *.AppImage" | tar -zxvf - -C ./
+# $ kubectl exec psbuild64-s652n -n prusaslicer -- bash -c "cd /build/PrusaSlicer-ARM.AppImage/;tar -zcf - *.AppImage" | tar -zxvf - -C ./
 #
 # Jobs persist after completing, to remove it, and any resources created by this file:
-# $ kubectl delete -f job.yml -n prusaslicer
+# $ kubectl delete -f k8s-build-job.yml -n prusaslicer
 #
 ## ------------------------------------------
 #
@@ -66,60 +65,6 @@ spec:
     requests:
       storage: 20Gi
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: psbuild32-longhorn-pvc
-  namespace: prusaslicer
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: longhorn-singlereplica
-  resources:
-    requests:
-      storage: 20Gi
----
-# https://kubernetes.io/docs/concepts/workloads/controllers/job/
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: psbuild32
-  namespace: prusaslicer
-spec:
-  backoffLimit: 4
-  template:
-    spec:
-      containers:
-      - name: psarm32
-        image: docker.io/balenalib/armv7hf-debian
-        command: ["/bin/sh"]
-        args: ["-c","
-          apt-get update;
-          apt-get install -y wget git jq curl python3-pip file;
-          mkdir /ps;
-          cd /ps;
-          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/main/containers/k8s-helper.sh;
-          chmod +x ./k8s-helper.sh;
-          setarch armv7l ./k8s-helper.sh armhf;
-        "]
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-              - SYS_ADMIN
-        imagePullPolicy: Always
-        resources:
-          requests:
-            memory: 6Gi
-        volumeMounts:
-          - name: psbuild32-data
-            mountPath: /build
-      restartPolicy: Never
-      volumes:
-        - name: psbuild32-data
-          persistentVolumeClaim:
-            claimName: psbuild32-longhorn-pvc
----
 # https://kubernetes.io/docs/concepts/workloads/controllers/job/
 apiVersion: batch/v1
 kind: Job
@@ -131,22 +76,29 @@ spec:
   template:
     spec:
       containers:
-      - name: psarm64
-        image: docker.io/balenalib/raspberrypi5
+      - name: psbuild64
+        image: dtcooper/raspberrypi-os:latest
         command: ["/bin/sh"]
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_ADMIN
         args: ["-c","
           apt-get update;
-          apt-get install -y wget git jq curl python3-pip;
+          apt-get install -y sudo wget git jq curl python3-pip libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake libboost-nowide-dev;
           mkdir /ps;
           cd /ps;
           wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/main/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
-          ./k8s-helper.sh aarch64;
+          export LANG=C.UTF-8;
+          ./k8s-helper.sh aarch64 k8s_job_sharun
         "]
         imagePullPolicy: Always
         resources:
           requests:
-            memory: 6Gi
+            cpu: 4000m
+            memory: 20Gi
         volumeMounts:
           - name: psbuild64-data
             mountPath: /build
@@ -155,4 +107,4 @@ spec:
         - name: psbuild64-data
           persistentVolumeClaim:
             claimName: psbuild64-longhorn-pvc
-
+---
