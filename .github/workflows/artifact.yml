@@ -1,10 +1,12 @@
-name: Build AppImage for ARM using native runners
+name: Build PrusaSlicer AppImage for ARM using native runners
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - k8s_job_sharun
+      - k8s_job
   pull_request:
     branches:
       - main
