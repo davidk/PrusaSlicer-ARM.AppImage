@@ -89,7 +89,7 @@ spec:
           apt-get install -y sudo wget git jq curl python3-pip libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake libboost-nowide-dev;
           mkdir /ps;
           cd /ps;
-          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/main/containers/k8s-helper.sh;
+          wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job_sharun/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
           export LANG=C.UTF-8;
           ./k8s-helper.sh aarch64 k8s_job_sharun
