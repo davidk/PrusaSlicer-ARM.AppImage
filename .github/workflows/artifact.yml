@@ -28,11 +28,11 @@ jobs:
 
       - name: Build AppImage
         run: |
-          mkdir -p /ps /build;
+          sudo mkdir -p /ps /build;
           wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job_sharun/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
           export LANG=C.UTF-8;
-          ./k8s-helper.sh aarch64 k8s_job_sharun
+          sudo ./k8s-helper.sh aarch64 k8s_job_sharun
 
       - name: Upload AppImage as a downloadable artifact
         uses: actions/upload-artifact@v4
