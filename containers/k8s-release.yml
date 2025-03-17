@@ -1,18 +1,18 @@
-# Kubernetes Job to perform help perform release tasks for PrusaSlicer ARM AppImages
+# Kubernetes Job to help perform release tasks for PrusaSlicer ARM AppImages
 #
-# Note that this requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
+# This requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
 # for how to set this up using kubectl.
 #
 # To create a token for use (on GitHub):
 # Click profile icon > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token
 #
-# Ensure the following permissions are required:
+# Ensure the following permissions are set:
 #   - Read access to metadata
 #   - Read and Write access to administration, code and commit statuses
 # Restrict/lock repository access to the repository that AppImages will be released out of.
 #
 # To insert the secret token into github into k3s/k8s under the prusaslicer namespace:
-# $ kubectl create -n prusaslicer secret generic github-release --from-literal=token='github secret token goes here'
+# $ kubectl create -n prusaslicer secret generic github-release --from-literal=token='<github secret token goes here>'
 #
 # To update the secret token, edit the secret and replace the base64 encoded token with a new one (also base64 encoded):
 # $ kubectl edit -n prusaslicer secret github-release 
@@ -38,11 +38,11 @@ spec:
     spec:
       containers:
       - name: releaser
-        image: ubuntu:latest
+        image: dtcooper/raspberrypi-os:latest
         command: ["/bin/sh"]
         args: ["-c","
           apt-get update;
-          apt-get install -y vim jq curl;
+          apt-get install -y vim jq curl sudo wget git jq curl python3-pip libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake libboost-nowide-dev;
           mkdir /release;
           cp -av /psbuild*/PrusaSlicer-ARM.AppImage/*.AppImage /release/;
           cp -av /psbuild*/PrusaSlicer-ARM.AppImage/*.log /release/;
@@ -50,6 +50,9 @@ spec:
           tail -f /dev/null;
         "]
         env:
+          # Set LANG otherwise downloads fail to decompress (boost)
+          - name: LANG
+            value: C.UTF-8
           # kubectl create -n prusaslicer secret generic github-release --from-literal=token='github secret token goes here'
           - name: GITHUB_TOKEN
             valueFrom:
@@ -59,17 +62,13 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: 2Gi
+            cpu: 4000m
+            memory: 20Gi
         volumeMounts:
-          - name: psbuild32-data
-            mountPath: /psbuild32
           - name: psbuild64-data
             mountPath: /psbuild64
       restartPolicy: Never
       volumes:
-        - name: psbuild32-data
-          persistentVolumeClaim:
-            claimName: psbuild32-longhorn-pvc
         - name: psbuild64-data
           persistentVolumeClaim:
             claimName: psbuild64-longhorn-pvc
