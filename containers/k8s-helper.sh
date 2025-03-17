@@ -55,10 +55,10 @@ cd PrusaSlicer-ARM.AppImage || exit 1;
 if [[ "${dpkg_arch}" == "arm64" ]]; then
   if [[ "${build_arch}" == "aarch64" ]]; then
     echo "Starting automated build for aarch64. Log output will be directed to ${HOSTNAME}-${build_arch}-k8s-build.log .."
-    { time ./build.sh "automated" || tail -f /dev/null; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log"
+    { time ./build.sh "automated"; } |& sed -e 's/^/aarch64> /;' |& tee "${HOSTNAME}-${build_arch}-k8s-build.log"
   fi
 else
-  { time ./build.sh "automated" || tail -f /dev/null; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
+  { time ./build.sh "automated"; } |& tee "${HOSTNAME}-${build_arch}-k8s-build.log" &
 fi
 
 exit 0

@@ -3,7 +3,7 @@
 # This requires a GITHUB_TOKEN secret / ENV to deploy. See the env: section below
 # for how to set this up using kubectl.
 #
-# To create a token for use (on GitHub):
+# -- To create a token for use (on GitHub)  --
 # Click profile icon > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token
 #
 # Ensure the following permissions are set:
@@ -11,19 +11,22 @@
 #   - Read and Write access to administration, code and commit statuses
 # Restrict/lock repository access to the repository that AppImages will be released out of.
 #
-# To insert the secret token into github into k3s/k8s under the prusaslicer namespace:
+# -- To insert the secret token into github into k3s/k8s under the prusaslicer namespace  --
 # $ kubectl create -n prusaslicer secret generic github-release --from-literal=token='<github secret token goes here>'
 #
-# To update the secret token, edit the secret and replace the base64 encoded token with a new one (also base64 encoded):
+# --  To update the secret token, edit the secret and replace the base64 encoded token with a new one (also base64 encoded)  -- 
 # $ kubectl edit -n prusaslicer secret github-release 
 #
-# Workflow for creating and releasing an AppImage using K3S
+# -- Workflow for creating and releasing an AppImage using K3S  --
 #
 # $ kubectl create -n prusaslicer -f release.yml; \
 # kubectl wait --for=condition=Ready pod --timeout=-1s --selector=job-name=releaser -n prusaslicer && \
 # kubectl exec jobs/releaser -n prusaslicer -it -- sh
 #
 # Navigate to /release, then run ./stage-release.sh ./[a build.log file]
+#
+# -- Debugging builds --
+# Dependencies and resources are requested at a level that allows the release job to also be used to inspect and rebuild an AppImage.
 #
 ---
 # https://kubernetes.io/docs/concepts/workloads/controllers/job/

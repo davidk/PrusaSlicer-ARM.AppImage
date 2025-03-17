@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04-arm64
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout Repository
@@ -28,14 +28,14 @@ jobs:
 
       - name: Build AppImage
         run: |
-          mkdir -p /ps /build;
+          sudo mkdir -p /ps /build;
           wget https://raw.githubusercontent.com/davidk/PrusaSlicer-ARM.AppImage/k8s_job_sharun/containers/k8s-helper.sh;
           chmod +x ./k8s-helper.sh;
           export LANG=C.UTF-8;
-          ./k8s-helper.sh aarch64 k8s_job_sharun
+          sudo ./k8s-helper.sh aarch64 k8s_job_sharun
 
       - name: Upload AppImage as a downloadable artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: GitHubActions-PrusaSlicer-ARM-AppImage
+          name: PrusaSlicer-ARM-AppImage
           path: /build/PrusaSlicer-ARM.AppImage/*.AppImage
