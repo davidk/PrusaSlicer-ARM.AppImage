@@ -9,7 +9,7 @@
 # Walks through the process to install dependencies, builds PrusaSlicer and packages the AppImage.
 # $ ./build.sh automated
 # Does not prompt (defaults to the latest PrusaSlicer version) and executes the steps above.
-# $./build.sh dependencies
+# $ ./build.sh dependencies
 # Installs dependencies required to build PrusaSlicer and generate an AppImage and exits.
 #
 # Environmental variables
@@ -59,11 +59,6 @@ case ${DPKG_ARCH} in
     ;;
 esac
 
-echo
-echo '**********************************************************************************'
-echo '* This utility needs your consent to install the following packages for building *'
-echo '**********************************************************************************'
-
 for dep in "${DEPS_REQUIRED[@]}"; do
   echo "$dep"
 done
@@ -73,6 +68,11 @@ echo "---"
 if [[ -v AUTO ]]; then
   REPLY="y"
 else
+  # 
+  echo
+  echo '**********************************************************************************'
+  echo '* This utility needs your consent to install the following packages for building *'
+  echo '**********************************************************************************'
   read -p "May I use 'sudo apt-get install -y' to check for and install these dependencies? [N/y] " -n 1 -r
 fi
 
@@ -245,12 +245,11 @@ cmake .. \
 
 cd ../..
 
-# Install PrusaSlicer into AppDir
 mkdir -p PrusaSlicer/build
 cd PrusaSlicer/build || exit
 if ! cmake --build ./ --target install -j "$(nproc)"; then
   echo "Error building .." 
-  exit 0;
+  exit 1;
 fi
 
 # Build AppImage based off of system-level install
@@ -261,7 +260,8 @@ export PACKAGE="PrusaSlicer"
 export DESKTOP="/usr/resources/applications/PrusaSlicer.desktop"
 export ICON="/usr/resources/icons/PrusaSlicer.png"
 export GITHUB_REPOSITORY="davidk/PrusaSlicer-ARM.AppImage"
-export UPINFO="gh-releases-zsync|$(echo ${GITHUB_REPOSITORY} | tr '/' '|')|continuous|*${ARCH}.AppImage.zsync"
+UPINFO="gh-releases-zsync|$(echo ${GITHUB_REPOSITORY} | tr '/' '|')|continuous|*${ARCH}.AppImage.zsync"
+export UPINFO
 
 ARCH="$(uname -m)"
 export ARCH
@@ -318,3 +318,22 @@ chmod +x ./sharun && ln ./sharun ./AppRun
 mv ./*.AppImage* ../../../
 
 echo "Finished build process for PrusaSlicer and arch ${ARCH}. AppImage is: PrusaSlicer-${LATEST_VERSION#version_}-${ARCH}-full.AppImage"
+
+echo "Here is some information to help with generating and posting a release on GitHub:"
+
+cat <<EOF
+${LATEST_VERSION}
+
+PrusaSlicer-${LATEST_VERSION#version_} ARM AppImages
+
+This release tracks PrusaSlicer's upstream ${LATEST_VERSION}](https://github.com/prusa3d/PrusaSlicer/releases/tag/${LATEST_VERSION}). 
+AppImages have been built using sharun and appimagetool (with PrusaSlicer's dependencies).
+
+### How do I run the AppImage?
+
+After downloading the AppImage and installing dependencies, use the terminal to make the AppImage executable and run:
+
+    $ chmod +x PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
+    $ ./PrusaSlicer-${LATEST_VERSION}-aarch64.AppImage
+
+EOF
