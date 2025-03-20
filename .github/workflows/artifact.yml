@@ -37,5 +37,5 @@ jobs:
       - name: Upload AppImage as a downloadable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PrusaSlicer-ARM-AppImage
+          name: PrusaSlicer-ARM-AppImage-${{ env.LATEST_VERSION }}
           path: /build/PrusaSlicer-ARM.AppImage/*.AppImage

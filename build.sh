@@ -321,6 +321,8 @@ echo "Finished build process for PrusaSlicer and arch ${ARCH}. AppImage is: Prus
 
 echo "Here is some information to help with generating and posting a release on GitHub:"
 
+export LATEST_VERSION
+
 cat <<EOF
 ${LATEST_VERSION}
 
