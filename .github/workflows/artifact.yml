@@ -26,6 +26,14 @@ jobs:
             libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake \
             libboost-nowide-dev;
 
+      - name: Create PrusaSlicer dependency cache
+        uses: actions/cache@v4
+        with:
+          path: ./PrusaSlicer-ARM.AppImage/PrusaSlicer/deps/build/ps-dep-cache
+          key: ${{ runner.os }}-ps-dep-cache-${{ hashFiles('./PrusaSlicer-ARM.AppImage/PrusaSlicer/deps/build/ps-dep-cache/**') }}
+          restore-keys: |
+            ${{ runner.os }}-ps-dep-cache-
+
       - name: Build AppImage
         run: |
           sudo mkdir -p /ps /build;
