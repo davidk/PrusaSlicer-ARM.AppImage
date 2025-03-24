@@ -36,6 +36,9 @@ if [[ $1 == "automated" ]]; then
 elif [[ $1 == "dependencies" ]]; then
   AUTO="yes"
   DEPS_ONLY="yes"
+elif [[ $1 == "buildPrusaSlicerDeps" ]]; then
+  AUTO="yes"
+  BUILD_PS_DEPS="yes"
 fi
 
 DPKG_ARCH="$(dpkg --print-architecture)"
@@ -227,8 +230,14 @@ cd PrusaSlicer && \
 cd deps && \
 mkdir -p build && \
 cd build && \
-cmake .. -DDEP_WX_GTK3=ON && \
-cmake --build . && \
+cmake .. -DDEP_WX_GTK3=ON -DDEP_DOWNLOAD_DIR="${PWD}/ps-dep-cache" && \
+cmake --build .
+
+if [[ -v BUILD_PS_DEPS ]]; then
+  echo "PrusaSlicer dependencies have been built, exiting here."
+  exit 0
+fi
+
 cd ../.. && \
 mkdir -p build && \
 cd build && \
@@ -237,7 +246,7 @@ cmake .. \
 -GNinja \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_INSTALL_PREFIX=/usr \
--DCMAKE_PREFIX_PATH="$(pwd)/../deps/build/destdir/usr/local" \
+-DCMAKE_PREFIX_PATH="${PWD}/../deps/build/destdir/usr/local" \
 -DSLIC3R_GTK=3 \
 -DSLIC3R_OPENGL_ES=1 \
 -DSLIC3R_PCH=OFF \
