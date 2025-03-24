@@ -37,7 +37,6 @@ jobs:
       - name: Build AppImage
         run: |
           export LANG=C.UTF-8 && \
-          cd PrusaSlicer-ARM.AppImage && \
           time ./build.sh automated
 
       - name: Upload AppImage as a downloadable artifact
