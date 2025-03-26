@@ -37,7 +37,7 @@ jobs:
       - name: Build AppImage
         run: |
           export LANG=C.UTF-8 && \
-          time ./build.sh automated
+          time sudo ./build.sh automated
 
       - name: Upload AppImage as a downloadable artifact
         uses: actions/upload-artifact@v4
