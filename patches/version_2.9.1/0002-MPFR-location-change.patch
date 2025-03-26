@@ -1,0 +1,24 @@
+From 5ee919c8e71435d44a637aa2da1f98545049e116 Mon Sep 17 00:00:00 2001
+Date: Wed, 26 Mar 2025 07:02:51 +0000
+Subject: [PATCH] MPFR location change
+
+---
+ deps/+MPFR/MPFR.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/deps/+MPFR/MPFR.cmake b/deps/+MPFR/MPFR.cmake
+index e04ce286a..000ef3ecd 100644
+--- a/deps/+MPFR/MPFR.cmake
++++ b/deps/+MPFR/MPFR.cmake
+@@ -31,7 +31,7 @@ else ()
+         EXCLUDE_FROM_ALL ON
+         #URL http://ftp.vim.org/ftp/gnu/mpfr/mpfr-3.1.6.tar.bz2 https://www.mpfr.org/mpfr-3.1.6/mpfr-3.1.6.tar.bz2  # mirrors are allowed
+         #URL_HASH SHA256=cf4f4b2d80abb79e820e78c8077b6725bbbb4e8f41896783c899087be0e94068
+-        URL https://www.mpfr.org/mpfr-current/mpfr-4.2.1.tar.bz2
++        URL https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.bz2
+         URL_HASH SHA256=b9df93635b20e4089c29623b19420c4ac848a1b29df1cfd59f26cab0d2666aa0
+         DOWNLOAD_DIR ${${PROJECT_NAME}_DEP_DOWNLOAD_DIR}/MPFR
+         BUILD_IN_SOURCE ON
+-- 
+2.39.5
+
