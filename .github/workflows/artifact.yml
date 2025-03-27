@@ -25,9 +25,10 @@ jobs:
           sudo apt-get install -y sudo wget git jq curl python3-pip \
             libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake \
             libboost-nowide-dev;
-            echo "Directory is: ${PWD}"
+            git clone https://github.com/prusa3d/PrusaSlicer;
+            echo "Directory is: ${PWD}";
 
-      - name: Create PrusaSlicer dependency cache
+      - name: Check PrusaSlicer dependency cache
         uses: actions/cache@v4
         with:
           path: ./PrusaSlicer/deps/build/ps-dep-cache
@@ -44,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PrusaSlicer-ARM-AppImage-${{ env.LATEST_VERSION }}
-          path: ./PrusaSlicer-ARM.AppImage/PrusaSlicer-ARM.AppImage/*.AppImage
+          path: ./*.AppImage
