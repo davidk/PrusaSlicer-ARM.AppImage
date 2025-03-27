@@ -44,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PrusaSlicer-ARM-AppImage-${{ env.LATEST_VERSION }}
-          path: ./PrusaSlicer-ARM.AppImage/PrusaSlicer-ARM.AppImage/*.AppImage
+          path: ./*.AppImage
