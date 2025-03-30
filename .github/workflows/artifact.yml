@@ -22,8 +22,8 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y sudo wget git jq curl python3-pip \
+          apt-get update
+          apt-get install -y sudo wget git jq curl python3-pip \
             libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake \
             libboost-nowide-dev;
             git clone https://github.com/prusa3d/PrusaSlicer;
