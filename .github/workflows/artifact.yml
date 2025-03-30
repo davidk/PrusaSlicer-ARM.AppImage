@@ -24,7 +24,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y sudo wget git jq curl python3-pip \
-            libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake \
+            libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake time \
             libboost-nowide-dev;
             git clone https://github.com/prusa3d/PrusaSlicer;
             echo "Directory is: ${PWD}";
