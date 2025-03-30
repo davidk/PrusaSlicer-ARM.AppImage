@@ -13,17 +13,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04-arm
-
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: dtcooper/raspberrypi-os:latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y sudo wget git jq curl python3-pip \
-            libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake \
+          apt-get update
+          apt-get install -y sudo wget git jq curl python3-pip \
+            libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev texinfo automake time \
             libboost-nowide-dev;
             git clone https://github.com/prusa3d/PrusaSlicer;
             echo "Directory is: ${PWD}";
