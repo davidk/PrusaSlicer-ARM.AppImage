@@ -23,7 +23,7 @@ LATEST_RELEASE="https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
 DEPS_REQUIRED=(build-essential cmake desktop-file-utils fakeroot fuse git libboost-nowide-dev libgdk-pixbuf2.0-dev \
   libgl1-mesa-dev libglu1-mesa-dev libgtk-3-dev m4 ninja-build patchelf python3-dev python3-pip python3-setuptools \
   screen squashfs-tools strace sudo wget zstd zsync libwebkit2gtk-4.1-dev libwxgtk-media3.2-dev xvfb file binutils \
-  patchelf findutils grep sed coreutils strace rsync)
+  patchelf findutils grep sed coreutils strace rsync libibus-1.0-5 texinfo autoconf libtool)
   
 if [[ -v $STY ]] || [[ -z $STY ]]; then
   echo -e '\033[1;36m**** The PrusaSlicer build process can take a long time. Screen or an alternative is advised for long-running terminal sessions. ****\033[0m'
