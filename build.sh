@@ -663,7 +663,12 @@ if is_step_completed "create_appimage"; then
   echo "✓ AppImage already created (skipping)"
 else
   cd PrusaSlicer/build || exit 1
-  
+
+  # Set INSTALL_DIR if not already set (in case build_prusaslicer was skipped)
+  if [[ -z "${INSTALL_DIR:-}" ]]; then
+    export INSTALL_DIR="${PWD}/../../install_dir"
+  fi
+
   set -x
   export PACKAGE="PrusaSlicer"
   export INSTALL_PREFIX="${INSTALL_DIR}/usr"
