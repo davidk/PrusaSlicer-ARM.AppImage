@@ -708,7 +708,7 @@ else
           /usr/share/glvnd/*                            \
           /usr/lib/"${ARCH}"-linux-gnu/dri/* 
 
-  cp /usr/bin/OCCTWrapper.so ./bin/
+  cp ${INSTALL_PREFIX}/bin/OCCTWrapper.so ./bin/
 
   # Create environment
   cat > .env <<'EOF'
