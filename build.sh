@@ -602,6 +602,10 @@ fi
 if is_step_completed "configure_prusaslicer"; then
   echo "✓ PrusaSlicer already configured (skipping)"
 else
+  # Customize version.inc to identify this as an ARM AppImage build
+  echo "Customizing version.inc for ARM AppImage build..."
+  sed -i 's/+UNKNOWN/+ARM-AppImage/' PrusaSlicer/version.inc
+
   cd PrusaSlicer || exit 1
   mkdir -p build
   cd build || exit 1
