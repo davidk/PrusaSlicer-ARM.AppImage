@@ -670,11 +670,11 @@ else
   export DESKTOP="${INSTALL_PREFIX}/resources/applications/PrusaSlicer.desktop"
   export ICON="${INSTALL_PREFIX}/resources/icons/PrusaSlicer.png"
   export GITHUB_REPOSITORY="davidk/PrusaSlicer-ARM.AppImage"
-  UPINFO="gh-releases-zsync|$(echo ${GITHUB_REPOSITORY} | tr '/' '|')|continuous|*${ARCH}.AppImage.zsync"
-  export UPINFO
 
   ARCH="$(uname -m)"
   export ARCH
+  UPINFO="gh-releases-zsync|$(echo ${GITHUB_REPOSITORY} | tr '/' '|')|continuous|*${ARCH}.AppImage.zsync"
+  export UPINFO
   export APPIMAGE_EXTRACT_AND_RUN=1
 
   mkdir -p AppDir && cd AppDir || exit
