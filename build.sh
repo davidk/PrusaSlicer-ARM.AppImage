@@ -724,7 +724,7 @@ unset LD_PRELOAD
 EOF
 
   wget -c "https://github.com/VHSgunzo/sharun/releases/download/v0.4.3/sharun-$(uname -m)-upx" -O ./sharun || true
-  chmod +x ./sharun && ln ./sharun ./AppRun
+  chmod +x ./sharun && ln -f ./sharun ./AppRun
   ./sharun -g || true 
 
   run_with_progress "Creating AppImage (this may take a while)..." \
