@@ -618,7 +618,6 @@ else
     -DCMAKE_INSTALL_PREFIX=/usr
     -DCMAKE_PREFIX_PATH="${PWD}/../deps/build/destdir/usr/local"
     -DSLIC3R_GTK=3
-    -DSLIC3R_OPENGL_ES=1
     -DSLIC3R_PCH=OFF
     -DSLIC3R_STATIC=ON
   )
