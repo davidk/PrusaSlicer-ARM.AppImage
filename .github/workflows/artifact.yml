@@ -5,8 +5,7 @@ on:
   push:
     branches:
       - main
-      - k8s_job_sharun
-      - k8s_job
+      - regular_opengl
   pull_request:
     branches:
       - main
