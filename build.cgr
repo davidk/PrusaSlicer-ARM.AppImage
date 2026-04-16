@@ -1,0 +1,554 @@
+--- PrusaSlicer ARM AppImage build ---
+
+# Equivalent to ./build.sh automated, expressed as a CommandGraph: https://github.com/commandgraph/cgr
+#
+# Usage:
+#   cgr apply build.cgr
+#   cgr apply build.cgr --set build_version=version_2.9.4
+#
+# Optional modes:
+#   cgr apply build.cgr --set build_prusaslicer_deps=no --set build_appimage=no
+#     Installs system/AppImage dependencies only.
+#
+#   cgr apply build.cgr --set build_appimage=no
+#     Installs dependencies and builds PrusaSlicer third-party deps only.
+
+set stateless = true
+set build_version = ""
+set install_dependencies = "yes"
+set build_prusaslicer_deps = "yes"
+set build_appimage = "yes"
+
+set latest_release_api = "https://api.github.com/repos/prusa3d/PrusaSlicer/releases"
+set state_dir = ".cgr_build"
+set deps_required = "build-essential cmake desktop-file-utils fakeroot fuse git libboost-nowide-dev libgdk-pixbuf2.0-dev libgl1-mesa-dev libglu1-mesa-dev libgtk-3-dev m4 ninja-build patchelf python3-dev python3-pip python3-setuptools screen squashfs-tools strace sudo wget zstd zsync libwebkit2gtk-4.1-dev libwxgtk-media3.2-dev xvfb file binutils patchelf findutils grep sed coreutils strace rsync libibus-1.0-5 texinfo autoconf libtool curl jq ccache"
+
+target "local" local:
+
+  [prepare state directory]:
+    skip if $ test -d ${state_dir}
+    run $ mkdir -p ${state_dir}
+    timeout 1m
+
+  [validate build mode]:
+    first [prepare state directory]
+    skip if $ test -f ${state_dir}/validate_build_host.ok && test "$(cat ${state_dir}/validate_build_host.ok)" = "${build_version}|${build_prusaslicer_deps}|${build_appimage}"
+    run $ test "${build_appimage}" != "yes" || test "${build_prusaslicer_deps}" = "yes"
+    timeout 1m
+
+  [validate build architecture]:
+    first [validate build mode]
+    skip if $ test -f ${state_dir}/validate_build_host.ok && test "$(cat ${state_dir}/validate_build_host.ok)" = "${build_version}|${build_prusaslicer_deps}|${build_appimage}"
+    run $ dpkg --print-architecture | grep -Eq '^(armhf|arm64|amd64)$'
+    timeout 1m
+
+  [validate disk space]:
+    first [validate build architecture]
+    skip if $ test -f ${state_dir}/validate_build_host.ok && test "$(cat ${state_dir}/validate_build_host.ok)" = "${build_version}|${build_prusaslicer_deps}|${build_appimage}"
+    run $ test "$(df -k . | awk 'NR==2 {print int($4 / 1024 / 1024)}')" -ge 25
+    timeout 1m
+
+  [validate requested version]:
+    first [validate disk space]
+    skip if $ test -f ${state_dir}/validate_build_host.ok && test "$(cat ${state_dir}/validate_build_host.ok)" = "${build_version}|${build_prusaslicer_deps}|${build_appimage}"
+    run $ test -z "${build_version}" || printf '%s\n' "${build_version}" | grep -Eq '^(version_[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-[a-zA-Z0-9]+)?|[a-f0-9]{7,40})$'
+    timeout 1m
+
+  [record build host validation]:
+    first [validate requested version]
+    skip if $ test -f ${state_dir}/validate_build_host.ok && test "$(cat ${state_dir}/validate_build_host.ok)" = "${build_version}|${build_prusaslicer_deps}|${build_appimage}"
+    content > ${state_dir}/validate_build_host.ok:
+      ${build_version}|${build_prusaslicer_deps}|${build_appimage}
+
+  [install system dependencies]:
+    first [record build host validation]
+    when "${install_dependencies} == 'yes'"
+    skip if $ for pkg in ${deps_required}; do dpkg -s "$pkg" >/dev/null 2>&1 || exit 1; done
+    env DEPS_REQUIRED = "${deps_required}"
+    run $ sh -c 'printf "%s\n" $DEPS_REQUIRED | xargs sudo apt-get install -y'
+    timeout 60m reset on output
+
+  [resolve appimagetool architecture]:
+    first [install system dependencies]
+    when "${install_dependencies} == 'yes'"
+    skip if $ test -s ${state_dir}/appimagetool.arch
+    run $ dpkg --print-architecture | sed -e 's/^arm64$/aarch64/' -e 's/^amd64$/x86_64/' > ${state_dir}/appimagetool.arch
+    timeout 1m
+
+  [download appimagetool]:
+    first [resolve appimagetool architecture]
+    when "${install_dependencies} == 'yes'"
+    skip if $ test -x /usr/local/bin/appimagetool
+    run $ sudo wget "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$(cat ${state_dir}/appimagetool.arch).AppImage" -O /usr/local/bin/appimagetool
+    timeout 20m reset on output
+
+  [make appimagetool executable]:
+    first [download appimagetool]
+    when "${install_dependencies} == 'yes'"
+    skip if $ test -x /usr/local/bin/appimagetool
+    run $ sudo chmod +x /usr/local/bin/appimagetool
+    timeout 1m
+
+  [download lib4bin]:
+    first [install system dependencies]
+    when "${install_dependencies} == 'yes'"
+    skip if $ test -x /usr/local/bin/lib4bin
+    run $ sudo wget "https://raw.githubusercontent.com/VHSgunzo/sharun/refs/heads/main/lib4bin" -O /usr/local/bin/lib4bin
+    timeout 20m reset on output
+
+  [make lib4bin executable]:
+    first [download lib4bin]
+    when "${install_dependencies} == 'yes'"
+    skip if $ test -x /usr/local/bin/lib4bin
+    run $ sudo chmod +x /usr/local/bin/lib4bin
+    timeout 1m
+
+  [record requested PrusaSlicer version]:
+    first [make appimagetool executable], [make lib4bin executable]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -z "${build_version}" || test "$(cat ${state_dir}/LATEST_VERSION 2>/dev/null)" = "${build_version}"
+    content > ${state_dir}/LATEST_VERSION:
+      ${build_version}
+
+  [fetch PrusaSlicer releases]:
+    first [record requested PrusaSlicer version]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -n "${build_version}" || test -s ${state_dir}/releases.json
+    run $ curl -SsL "${latest_release_api}" -o ${state_dir}/releases.json
+    timeout 20m reset on output
+
+  [record latest PrusaSlicer version]:
+    first [fetch PrusaSlicer releases]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -n "${build_version}" || test -s ${state_dir}/LATEST_VERSION
+    run $ jq -r 'first.tag_name' ${state_dir}/releases.json > ${state_dir}/LATEST_VERSION
+    timeout 1m
+
+  [validate resolved PrusaSlicer version]:
+    first [record latest PrusaSlicer version]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/resolved_version.ok && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/resolved_version.ok
+    run $ grep -Eq '^(version_[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-[a-zA-Z0-9]+)?|[a-f0-9]{7,40})$' ${state_dir}/LATEST_VERSION
+    timeout 1m
+
+  [mark resolved PrusaSlicer version]:
+    first [validate resolved PrusaSlicer version]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/resolved_version.ok && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/resolved_version.ok
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/resolved_version.ok
+    timeout 1m
+
+  [clone PrusaSlicer repository]:
+    first [mark resolved PrusaSlicer version]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -d PrusaSlicer/.git
+    run $ git clone https://github.com/prusa3d/PrusaSlicer --single-branch --branch "$(cat ${state_dir}/LATEST_VERSION)" --depth 1 PrusaSlicer
+    timeout 30m reset on output
+
+  [fetch PrusaSlicer revision]:
+    first [clone PrusaSlicer repository]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/clone_prusaslicer.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/clone_prusaslicer.version
+    run $ git -C PrusaSlicer fetch --depth 1 origin "$(cat ${state_dir}/LATEST_VERSION)" || true
+    timeout 30m reset on output
+
+  [checkout PrusaSlicer revision] timeout 5m reset on output:
+    first [fetch PrusaSlicer revision]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/clone_prusaslicer.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/clone_prusaslicer.version
+    run $ git -C PrusaSlicer checkout FETCH_HEAD
+
+  [apply PrusaSlicer patches]:
+    first [checkout PrusaSlicer revision]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/patches_applied.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/patches_applied.version
+    run $ if test -d "patches/$(cat ${state_dir}/LATEST_VERSION)"; then git -C PrusaSlicer apply -v ../patches/"$(cat ${state_dir}/LATEST_VERSION)"/*; fi
+    timeout 10m reset on output
+
+  [mark PrusaSlicer clone]:
+    first [apply PrusaSlicer patches]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/clone_prusaslicer.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/clone_prusaslicer.version
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/clone_prusaslicer.version && cp ${state_dir}/LATEST_VERSION ${state_dir}/patches_applied.version
+    timeout 1m
+
+  [set ccache max size]:
+    first [mark PrusaSlicer clone]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_max_size.ok
+    run $ command -v ccache >/dev/null 2>&1 && ccache --set-config=max_size=5G || true
+    timeout 1m
+
+  [mark ccache max size]:
+    first [set ccache max size]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_max_size.ok
+    run $ touch ${state_dir}/ccache_max_size.ok
+    timeout 1m
+
+  [set ccache compression]:
+    first [mark ccache max size]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_compression.ok
+    run $ command -v ccache >/dev/null 2>&1 && ccache --set-config=compression=true || true
+    timeout 1m
+
+  [mark ccache compression]:
+    first [set ccache compression]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_compression.ok
+    run $ touch ${state_dir}/ccache_compression.ok
+    timeout 1m
+
+  [set ccache compression level]:
+    first [mark ccache compression]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_compression_level.ok
+    run $ command -v ccache >/dev/null 2>&1 && ccache --set-config=compression_level=6 || true
+    timeout 1m
+
+  [mark ccache configured]:
+    first [set ccache compression level]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/configure_ccache.ok
+    run $ touch ${state_dir}/ccache_compression_level.ok ${state_dir}/configure_ccache.ok
+    timeout 1m
+
+  [prepare PrusaSlicer dependencies build directory]:
+    first [mark ccache configured]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -d PrusaSlicer/deps/build
+    run $ mkdir -p PrusaSlicer/deps/build
+    timeout 1m
+
+  [configure PrusaSlicer dependencies with ccache]:
+    first [prepare PrusaSlicer dependencies build directory]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ ! command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/configure_dependencies.version
+    run $ cmake -S PrusaSlicer/deps -B PrusaSlicer/deps/build -DDEP_WX_GTK3=ON -DDEP_DOWNLOAD_DIR=PrusaSlicer/deps/build/ps-dep-cache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+    timeout 60m reset on output
+
+  [configure PrusaSlicer dependencies without ccache]:
+    first [prepare PrusaSlicer dependencies build directory]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/configure_dependencies.version
+    run $ cmake -S PrusaSlicer/deps -B PrusaSlicer/deps/build -DDEP_WX_GTK3=ON -DDEP_DOWNLOAD_DIR=PrusaSlicer/deps/build/ps-dep-cache
+    timeout 60m reset on output
+
+  [mark PrusaSlicer dependencies configured]:
+    first [configure PrusaSlicer dependencies with ccache], [configure PrusaSlicer dependencies without ccache]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/configure_dependencies.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/configure_dependencies.version
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/configure_dependencies.version
+    timeout 1m
+
+  [build PrusaSlicer dependencies]:
+    first [mark PrusaSlicer dependencies configured]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/build_dependencies.version && test "$(cat ${state_dir}/build_dependencies.version)" = "$(cat ${state_dir}/LATEST_VERSION)" && test -d PrusaSlicer/deps/build/destdir/usr/local
+    run $ cmake --build PrusaSlicer/deps/build -j "$(nproc)"
+    timeout 12h reset on output
+
+  [mark PrusaSlicer dependencies built]:
+    first [build PrusaSlicer dependencies]
+    when "${build_prusaslicer_deps} == 'yes'"
+    skip if $ test -f ${state_dir}/build_dependencies.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/build_dependencies.version
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/build_dependencies.version
+    timeout 1m
+
+  [tag PrusaSlicer version for AppImage]:
+    first [mark PrusaSlicer dependencies built]
+    when "${build_appimage} == 'yes'"
+    skip if $ grep -q '+ARM-AppImage' PrusaSlicer/version.inc
+    run $ perl -0pi -e 's/\+UNKNOWN/\+ARM-AppImage/g' PrusaSlicer/version.inc
+    timeout 1m
+
+  [prepare PrusaSlicer build directory]:
+    first [tag PrusaSlicer version for AppImage]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -d PrusaSlicer/build
+    run $ mkdir -p PrusaSlicer/build
+    timeout 1m
+
+  [remove stale AppDir] timeout 5m:
+    first [prepare PrusaSlicer build directory]
+    when "${build_appimage} == 'yes'"
+    skip if $ test ! -d PrusaSlicer/build/AppDir
+    run $ rm -rf PrusaSlicer/buil?/AppDir
+
+  [write PrusaSlicer CMake cache]:
+    first [remove stale AppDir]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/prusaslicer.cmake
+    content > ${state_dir}/prusaslicer.cmake:
+      set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+      set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "")
+      set(CMAKE_PREFIX_PATH "PrusaSlicer/deps/build/destdir/usr/local" CACHE PATH "")
+      set(SLIC3R_GTK "3" CACHE STRING "")
+      set(SLIC3R_OPENGL_ES "1" CACHE BOOL "")
+      set(SLIC3R_PCH "OFF" CACHE BOOL "")
+      set(SLIC3R_STATIC "ON" CACHE BOOL "")
+
+  [write PrusaSlicer ccache CMake cache]:
+    first [write PrusaSlicer CMake cache]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/prusaslicer-ccache.cmake
+    content > ${state_dir}/prusaslicer-ccache.cmake:
+      set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
+      set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "")
+      set(CMAKE_PREFIX_PATH "PrusaSlicer/deps/build/destdir/usr/local" CACHE PATH "")
+      set(SLIC3R_GTK "3" CACHE STRING "")
+      set(SLIC3R_OPENGL_ES "1" CACHE BOOL "")
+      set(SLIC3R_PCH "OFF" CACHE BOOL "")
+      set(SLIC3R_STATIC "ON" CACHE BOOL "")
+      set(CMAKE_C_COMPILER_LAUNCHER "ccache" CACHE STRING "")
+      set(CMAKE_CXX_COMPILER_LAUNCHER "ccache" CACHE STRING "")
+
+  [configure PrusaSlicer with ccache]:
+    first [write PrusaSlicer ccache CMake cache]
+    when "${build_appimage} == 'yes'"
+    skip if $ ! command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/configure_prusaslicer.version
+    run $ cmake -S PrusaSlicer -B PrusaSlicer/build -GNinja -C ${state_dir}/prusaslicer-ccache.cmake
+    timeout 60m reset on output
+
+  [configure PrusaSlicer without ccache]:
+    first [write PrusaSlicer ccache CMake cache]
+    when "${build_appimage} == 'yes'"
+    skip if $ command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/configure_prusaslicer.version
+    run $ cmake -S PrusaSlicer -B PrusaSlicer/build -GNinja -C ${state_dir}/prusaslicer.cmake
+    timeout 60m reset on output
+
+  [mark PrusaSlicer configured]:
+    first [configure PrusaSlicer with ccache], [configure PrusaSlicer without ccache]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/configure_prusaslicer.version && test "$(cat ${state_dir}/configure_prusaslicer.version)" = "$(cat ${state_dir}/LATEST_VERSION)" && test -d PrusaSlicer/build
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/configure_prusaslicer.version
+    timeout 1m
+
+  [show ccache stats before build]:
+    first [mark PrusaSlicer configured]
+    when "${build_appimage} == 'yes'"
+    skip if $ ! command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/ccache_stats_before_build.ok
+    run $ ccache --show-stats --verbose 2>/dev/null | grep -E "(cache hit|cache miss|files in cache)" || ccache --show-stats
+    timeout 2m reset on output
+
+  [mark ccache stats before build]:
+    first [show ccache stats before build]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/ccache_stats_before_build.ok
+    run $ touch ${state_dir}/ccache_stats_before_build.ok
+    timeout 1m
+
+  [build PrusaSlicer]:
+    first [mark ccache stats before build]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/build_prusaslicer.version && test "$(cat ${state_dir}/build_prusaslicer.version)" = "$(cat ${state_dir}/LATEST_VERSION)" && test -d install_dir/usr
+    run $ cmake --build PrusaSlicer/build -j "$(nproc)"
+    timeout 12h reset on output
+
+  [install PrusaSlicer]:
+    first [build PrusaSlicer]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/build_prusaslicer.version && test "$(cat ${state_dir}/build_prusaslicer.version)" = "$(cat ${state_dir}/LATEST_VERSION)" && test -d install_dir/usr
+    run $ env DESTDIR="$PWD/install_dir" cmake --build PrusaSlicer/build --target install
+    timeout 60m reset on output
+
+  [show ccache stats after build]:
+    first [install PrusaSlicer]
+    when "${build_appimage} == 'yes'"
+    skip if $ ! command -v ccache >/dev/null 2>&1 || test -f ${state_dir}/ccache_stats_after_build.ok
+    run $ ccache --show-stats
+    timeout 2m reset on output
+
+  [mark PrusaSlicer built]:
+    first [show ccache stats after build]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/build_prusaslicer.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/build_prusaslicer.version
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/build_prusaslicer.version && touch ${state_dir}/ccache_stats_after_build.ok
+    timeout 1m
+
+  [record AppImage architecture]:
+    first [mark PrusaSlicer built]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/ARCH
+    run $ uname -m > ${state_dir}/ARCH
+    timeout 1m
+
+  [record AppImage version]:
+    first [record AppImage architecture]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/VERSION_NO_PREFIX && sed "s/^version_//" ${state_dir}/LATEST_VERSION | cmp -s - ${state_dir}/VERSION_NO_PREFIX
+    run $ sed 's/^version_//' ${state_dir}/LATEST_VERSION > ${state_dir}/VERSION_NO_PREFIX
+    timeout 1m
+
+  [record AppImage name]:
+    first [record AppImage version]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/APPIMAGE_NAME
+    run $ awk 'NR==FNR{v=$0;next}{print "PrusaSlicer-" v "-" $0 "-full.AppImage"}' ${state_dir}/VERSION_NO_PREFIX ${state_dir}/ARCH > ${state_dir}/APPIMAGE_NAME
+    timeout 1m
+
+  [record AppImage update information]:
+    first [record AppImage name]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/UPINFO
+    run $ awk '{print "gh-releases-zsync|davidk|PrusaSlicer-ARM.AppImage|continuous|*" $0 ".AppImage.zsync"}' ${state_dir}/ARCH > ${state_dir}/UPINFO
+    timeout 1m
+
+  [prepare AppDir]:
+    first [record AppImage update information]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -d PrusaSlicer/build/AppDir
+    run $ mkdir -p PrusaSlicer/build/AppDir
+    timeout 1m
+
+  [prepare AppDir directories]:
+    first [prepare AppDir]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -d PrusaSlicer/build/AppDir/shared/lib && test -d PrusaSlicer/build/AppDir/usr/resources
+    run $ mkdir -p PrusaSlicer/build/AppDir/shared/lib PrusaSlicer/build/AppDir/usr/share/applications PrusaSlicer/build/AppDir/etc PrusaSlicer/build/AppDir/usr/resources
+    timeout 1m
+
+  [copy PrusaSlicer resources]:
+    first [prepare AppDir directories]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -d PrusaSlicer/build/AppDir/usr/resources/icons
+    run $ cp -av install_dir/usr/resources/* PrusaSlicer/build/AppDir/usr/resources/
+    timeout 10m reset on output
+
+  [copy PrusaSlicer desktop file]:
+    first [copy PrusaSlicer resources]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f PrusaSlicer/build/AppDir/PrusaSlicer.desktop
+    run $ cp install_dir/usr/resources/applications/PrusaSlicer.desktop PrusaSlicer/build/AppDir/
+    timeout 1m
+
+  [copy PrusaSlicer icon]:
+    first [copy PrusaSlicer desktop file]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f PrusaSlicer/build/AppDir/PrusaSlicer.png
+    run $ cp install_dir/usr/resources/icons/PrusaSlicer.png PrusaSlicer/build/AppDir/
+    timeout 1m
+
+  [link AppDir share]:
+    first [copy PrusaSlicer icon]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -L PrusaSlicer/build/AppDir/share
+    run $ ln -fs ./usr/share PrusaSlicer/build/AppDir/share
+    timeout 1m
+
+  [link AppDir resources]:
+    first [link AppDir share]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -L PrusaSlicer/build/AppDir/resources
+    run $ ln -fs ./usr/resources PrusaSlicer/build/AppDir/resources
+    timeout 1m
+
+  [link AppDir lib]:
+    first [link AppDir resources]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -L PrusaSlicer/build/AppDir/lib
+    run $ ln -fs ./shared/lib PrusaSlicer/build/AppDir/lib
+    timeout 1m
+
+  [record lib4bin input template]:
+    first [link AppDir lib]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/lib4bin-inputs.in
+    content > ${state_dir}/lib4bin-inputs.in:
+      install_dir/usr/bin/prusa-gcodeviewer
+      install_dir/usr/bin/prusa-slicer
+      /usr/lib/@ARCH@-linux-gnu/webkit2gtk-4.1/*
+      /usr/lib/@ARCH@-linux-gnu/libnss*
+      /usr/lib/@ARCH@-linux-gnu/gio/*
+      /usr/share/glib-2.0
+      /usr/share/glvnd/*
+      /usr/lib/@ARCH@-linux-gnu/dri/*
+
+  [render lib4bin inputs]:
+    first [record lib4bin input template]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -s ${state_dir}/lib4bin-inputs
+    run $ sed "s/@ARCH@/$(cat ${state_dir}/ARCH)/g" ${state_dir}/lib4bin-inputs.in > ${state_dir}/lib4bin-inputs
+    timeout 1m
+
+  [bundle AppDir libraries]:
+    first [render lib4bin inputs]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -d PrusaSlicer/build/AppDir/bin && test -d PrusaSlicer/build/AppDir/shared/lib
+    run $ cd PrusaSlicer/build/AppDir && sh -c 'xvfb-run -a -- /usr/local/bin/lib4bin -p -v -e -s -k "$@"' sh $(cat ../../../${state_dir}/lib4bin-inputs)
+    timeout 60m reset on output
+
+  [copy OCCT wrapper]:
+    first [bundle AppDir libraries]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f PrusaSlicer/build/AppDir/bin/OCCTWrapper.so
+    run $ cp install_dir/usr/bin/OCCTWrapper.so PrusaSlicer/build/AppDir/bin/
+    timeout 1m
+
+  [write AppDir environment]:
+    first [copy OCCT wrapper]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f PrusaSlicer/build/AppDir/.env
+    content > PrusaSlicer/build/AppDir/.env:
+      SHARUN_WORKING_DIR=$SHARUN_DIR
+      LIBGL_DRIVERS_PATH=$SHARUN_DIR/shared/lib/dri
+      GSETTINGS_BACKEND=memory
+      unset LD_LIBRARY_PATH
+      unset LD_PRELOAD
+    validate $ test -s PrusaSlicer/build/AppDir/.env
+
+  [download sharun]:
+    first [write AppDir environment]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f PrusaSlicer/build/AppDir/sharun
+    run $ wget -c "https://github.com/VHSgunzo/sharun/releases/download/v0.4.3/sharun-$(cat ${state_dir}/ARCH)-upx" -O PrusaSlicer/build/AppDir/sharun || true
+    timeout 20m reset on output
+
+  [make sharun executable]:
+    first [download sharun]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -x PrusaSlicer/build/AppDir/sharun
+    run $ chmod +x PrusaSlicer/build/AppDir/sharun
+    timeout 1m
+
+  [link AppRun]:
+    first [make sharun executable]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -L PrusaSlicer/build/AppDir/AppRun
+    run $ ln -f PrusaSlicer/build/AppDir/sharun PrusaSlicer/build/AppDir/AppRun
+    timeout 1m
+
+  [generate sharun launchers] timeout 5m reset on output:
+    first [link AppRun]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/sharun_generated.ok
+    run $ cd PrusaSlicer/buil?/AppDir && ./sharun -g || true
+
+  [mark sharun launchers generated]:
+    first [generate sharun launchers]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/sharun_generated.ok
+    run $ touch ${state_dir}/sharun_generated.ok
+    timeout 1m
+
+  [create AppImage]:
+    first [mark sharun launchers generated]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f "$(cat ${state_dir}/APPIMAGE_NAME)"
+    run $ /usr/local/bin/appimagetool --comp zstd --mksquashfs-opt -Xcompression-level --mksquashfs-opt 22 -n -u "$(cat ${state_dir}/UPINFO)" PrusaSlicer/build/AppDir "$(cat ${state_dir}/APPIMAGE_NAME)"
+    timeout 6h reset on output
+
+  [mark AppImage created]:
+    first [create AppImage]
+    when "${build_appimage} == 'yes'"
+    skip if $ test -f ${state_dir}/create_appimage.version && cmp -s ${state_dir}/LATEST_VERSION ${state_dir}/create_appimage.version
+    run $ cp ${state_dir}/LATEST_VERSION ${state_dir}/create_appimage.version
+    timeout 1m
+
+  [show build result]:
+    first [mark AppImage created]
+    when "${build_appimage} == 'yes'"
+    skip if $ test "${build_appimage}" != "yes"
+    run $ echo "Finished build process for PrusaSlicer and arch $(cat ${state_dir}/ARCH). AppImage: $(cat ${state_dir}/APPIMAGE_NAME)"
+    timeout 2m reset on output
