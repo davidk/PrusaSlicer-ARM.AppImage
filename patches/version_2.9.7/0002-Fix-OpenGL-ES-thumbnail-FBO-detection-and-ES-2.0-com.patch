@@ -1,0 +1,104 @@
+Subject: [PATCH] Fix OpenGL ES thumbnail FBO detection and ES 2.0
+ compatibility
+
+Under SLIC3R_OPENGL_ES, GLEW extension flags (GLEW_ARB_framebuffer_object,
+GLEW_EXT_framebuffer_object) are never set because FBOs are core in ES 2.0+.
+This caused s_framebuffers_type to stay Unknown, routing all thumbnail
+rendering through the legacy path (default framebuffer readback) instead
+of the FBO path.
+
+Fix framebuffer detection to unconditionally set Arb under OpenGL ES.
+Also fix _render_thumbnail_framebuffer for ES 2.0:
+- Guard GL_MULTISAMPLE (undefined in ES 2.0)
+- Use GL_DEPTH_COMPONENT16 instead of GL_DEPTH_COMPONENT (ES requirement)
+- Guard glDrawBuffers (unavailable in ES 2.0)
+
+---
+ src/slic3r/GUI/GLCanvas3D.cpp    | 14 ++++++++++++++
+ src/slic3r/GUI/OpenGLManager.cpp |  5 +++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/src/slic3r/GUI/GLCanvas3D.cpp b/src/slic3r/GUI/GLCanvas3D.cpp
+index 3776e41f7..e03bb24db 100644
+--- a/src/slic3r/GUI/GLCanvas3D.cpp
++++ b/src/slic3r/GUI/GLCanvas3D.cpp
+@@ -5039,10 +5039,14 @@ void GLCanvas3D::_render_thumbnail_framebuffer(ThumbnailData& thumbnail_data, un
+     if (!thumbnail_data.is_valid())
+         return;
+ 
++#if !SLIC3R_OPENGL_ES
+     const bool multisample = ::glIsEnabled(GL_MULTISAMPLE);
+     glcheck();
+     if (m_multisample_allowed && !multisample)
+         glsafe(::glEnable(GL_MULTISAMPLE));
++#else
++    const bool multisample = false;
++#endif // !SLIC3R_OPENGL_ES
+ 
+     GLint max_samples;
+     glsafe(::glGetIntegerv(GL_MAX_SAMPLES, &max_samples));
+@@ -5076,12 +5080,18 @@ void GLCanvas3D::_render_thumbnail_framebuffer(ThumbnailData& thumbnail_data, un
+     if (multisample)
+         glsafe(::glRenderbufferStorageMultisample(GL_RENDERBUFFER, num_samples, GL_DEPTH_COMPONENT24, w, h));
+     else
++#if SLIC3R_OPENGL_ES
++        glsafe(::glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, w, h));
++#else
+         glsafe(::glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h));
++#endif // SLIC3R_OPENGL_ES
+ 
+     glsafe(::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, render_depth));
+ 
++#if !SLIC3R_OPENGL_ES
+     GLenum drawBufs[] = { GL_COLOR_ATTACHMENT0 };
+     glsafe(::glDrawBuffers(1, drawBufs));
++#endif // !SLIC3R_OPENGL_ES
+ 
+     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+         _render_thumbnail_internal(thumbnail_data, thumbnail_params, volumes, camera_type);
+@@ -5099,7 +5109,9 @@ void GLCanvas3D::_render_thumbnail_framebuffer(ThumbnailData& thumbnail_data, un
+             glsafe(::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+             glsafe(::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resolve_tex, 0));
+ 
++#if !SLIC3R_OPENGL_ES
+             glsafe(::glDrawBuffers(1, drawBufs));
++#endif // !SLIC3R_OPENGL_ES
+ 
+             if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+                 glsafe(::glBindFramebuffer(GL_READ_FRAMEBUFFER, render_fbo));
+@@ -5125,8 +5137,10 @@ void GLCanvas3D::_render_thumbnail_framebuffer(ThumbnailData& thumbnail_data, un
+         glsafe(::glDeleteTextures(1, &render_tex));
+     glsafe(::glDeleteFramebuffers(1, &render_fbo));
+ 
++#if !SLIC3R_OPENGL_ES
+     if (!multisample)
+         glsafe(::glDisable(GL_MULTISAMPLE));
++#endif // !SLIC3R_OPENGL_ES
+ }
+ 
+ void GLCanvas3D::_render_thumbnail_framebuffer_ext(ThumbnailData& thumbnail_data, unsigned int w, unsigned int h, const ThumbnailsParams& thumbnail_params, const GLVolumeCollection& volumes, Camera::EType camera_type)
+diff --git a/src/slic3r/GUI/OpenGLManager.cpp b/src/slic3r/GUI/OpenGLManager.cpp
+index b42a71f58..2f40c4189 100644
+--- a/src/slic3r/GUI/OpenGLManager.cpp
++++ b/src/slic3r/GUI/OpenGLManager.cpp
+@@ -363,12 +363,17 @@ bool OpenGLManager::init_gl()
+         else
+             s_compressed_textures_supported = false;
+ 
++#if SLIC3R_OPENGL_ES
++        // FBOs are core in OpenGL ES 2.0+ — not extension-detected via GLEW
++        s_framebuffers_type = EFramebufferType::Arb;
++#else
+         if (GLEW_ARB_framebuffer_object)
+             s_framebuffers_type = EFramebufferType::Arb;
+         else if (GLEW_EXT_framebuffer_object)
+             s_framebuffers_type = EFramebufferType::Ext;
+         else
+             s_framebuffers_type = EFramebufferType::Unknown;
++#endif // SLIC3R_OPENGL_ES
+ 
+ #if SLIC3R_OPENGL_ES
+         bool valid_version = s_gl_info.is_version_greater_or_equal_to(3, 0);
+-- 
+2.47.3
+

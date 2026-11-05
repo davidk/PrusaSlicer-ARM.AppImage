@@ -1,0 +1,138 @@
+Subject: [PATCH] Fix segfault on exit with OpenGL ES (EGL/Mesa) on ARM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Under OpenGL ES on Linux, the EGL surface (owned by wxGLCanvas) is destroyed
+before ~OpenGLManager() executes. By that point there is no current GL context,
+so calling glDeleteProgram inside GLShaderProgram::~GLShaderProgram() crashes
+on Mesa/EGL — producing the segfault-on-exit seen with the ARM AppImage.
+
+Two related fixes:
+
+1. OpenGLManager::~OpenGLManager(): For SLIC3R_OPENGL_ES builds, call
+   GLShadersManager::abandon() instead of shutdown(). abandon() zeroes each
+   shader's GL id before clearing the vector, preventing glDeleteProgram.
+   The EGL driver reclaims all context-owned resources when m_context is
+   subsequently destroyed via delete m_context.
+
+2. GLCanvas3D::~GLCanvas3D(): For SLIC3R_OPENGL_ES builds, call
+   SetCurrent() after reset_volumes() to ensure the GL context is current
+   before C++ member destructors run. reset_volumes() only sets the context
+   current when there are print volumes to free; without this guard,
+   ViewerImpl::shutdown() (reached via ~GCodeViewer) makes GL calls such as
+   glDeleteProgram / glDeleteBuffers without a valid context.
+
+New API surface: GLShaderProgram::abandon(), GLShadersManager::abandon().
+No behavior change for non-ES (desktop GL) builds.
+
+---
+ src/slic3r/GUI/GLCanvas3D.cpp       |  9 +++++++++
+ src/slic3r/GUI/GLShader.hpp         |  4 ++++
+ src/slic3r/GUI/GLShadersManager.cpp |  7 +++++++
+ src/slic3r/GUI/GLShadersManager.hpp |  3 +++
+ src/slic3r/GUI/OpenGLManager.cpp    | 12 ++++++++++--
+ 5 files changed, 33 insertions(+), 2 deletions(-)
+
+diff --git a/src/slic3r/GUI/GLCanvas3D.cpp b/src/slic3r/GUI/GLCanvas3D.cpp
+index e03bb24db..68b4bd300 100644
+--- a/src/slic3r/GUI/GLCanvas3D.cpp
++++ b/src/slic3r/GUI/GLCanvas3D.cpp
+@@ -1356,6 +1356,15 @@ GLCanvas3D::GLCanvas3D(wxGLCanvas *canvas, Bed3D &bed)
+ GLCanvas3D::~GLCanvas3D()
+ {
+     reset_volumes();
++#if SLIC3R_OPENGL_ES
++    // reset_volumes() only makes the GL context current when there are volumes to
++    // free. On OpenGL ES the context must be current for any GL call — including
++    // those made by member destructors such as ViewerImpl::shutdown() inside
++    // ~GCodeViewer(). Ensure the context is current here so that those destructors
++    // can safely call glDeleteProgram / glDeleteBuffers / glDeleteTextures.
++    if (m_initialized && m_canvas != nullptr && m_context != nullptr)
++        m_canvas->SetCurrent(*m_context);
++#endif // SLIC3R_OPENGL_ES
+ }
+ 
+ void GLCanvas3D::post_event(wxEvent &&event)
+diff --git a/src/slic3r/GUI/GLShader.hpp b/src/slic3r/GUI/GLShader.hpp
+index 6dfb15126..e67ae4f8a 100644
+--- a/src/slic3r/GUI/GLShader.hpp
++++ b/src/slic3r/GUI/GLShader.hpp
+@@ -49,6 +49,10 @@ private:
+ 
+ public:
+     ~GLShaderProgram();
++    // Release the shader ID without making any GL calls. Use when the GL context
++    // is already gone (e.g. EGL surface destroyed before ~OpenGLManager runs).
++    // The driver cleans up resources automatically when the context is destroyed.
++    void abandon() { m_id = 0; }
+ 
+     bool init_from_files(const std::string& name, const ShaderFilenames& filenames, const std::initializer_list<std::string_view> &defines = {});
+     bool init_from_texts(const std::string& name, const ShaderSources& sources);
+diff --git a/src/slic3r/GUI/GLShadersManager.cpp b/src/slic3r/GUI/GLShadersManager.cpp
+index 9c921c82f..1dbda7077 100644
+--- a/src/slic3r/GUI/GLShadersManager.cpp
++++ b/src/slic3r/GUI/GLShadersManager.cpp
+@@ -108,6 +108,13 @@ void GLShadersManager::shutdown()
+     m_shaders.clear();
+ }
+ 
++void GLShadersManager::abandon()
++{
++    for (auto& shader : m_shaders)
++        shader->abandon();
++    m_shaders.clear();
++}
++
+ GLShaderProgram* GLShadersManager::get_shader(const std::string& shader_name)
+ {
+     auto it = std::find_if(m_shaders.begin(), m_shaders.end(), [&shader_name](std::unique_ptr<GLShaderProgram>& p) { return p->get_name() == shader_name; });
+diff --git a/src/slic3r/GUI/GLShadersManager.hpp b/src/slic3r/GUI/GLShadersManager.hpp
+index 55a6d8342..a9289c079 100644
+--- a/src/slic3r/GUI/GLShadersManager.hpp
++++ b/src/slic3r/GUI/GLShadersManager.hpp
+@@ -21,6 +21,9 @@ public:
+     std::pair<bool, std::string> init();
+     // call this method before to release the OpenGL context
+     void shutdown();
++    // Release shaders without GL calls. Use when the EGL surface is already gone
++    // (OpenGL ES exit path) — the driver cleans up when the context is destroyed.
++    void abandon();
+ 
+     // returns nullptr if not found
+     GLShaderProgram* get_shader(const std::string& shader_name);
+diff --git a/src/slic3r/GUI/OpenGLManager.cpp b/src/slic3r/GUI/OpenGLManager.cpp
+index 2f40c4189..a0f9ebdce 100644
+--- a/src/slic3r/GUI/OpenGLManager.cpp
++++ b/src/slic3r/GUI/OpenGLManager.cpp
+@@ -280,9 +280,17 @@ OpenGLManager::OSInfo OpenGLManager::s_os_info;
+ 
+ OpenGLManager::~OpenGLManager()
+ {
++#if SLIC3R_OPENGL_ES
++    // On Linux/OpenGL ES the EGL surface (tied to the wxGLCanvas) is destroyed
++    // before ~OpenGLManager() runs. Calling glDeleteProgram without a current
++    // context crashes on Mesa/EGL. Abandon the shaders instead — the EGL driver
++    // cleans up all context-owned resources when m_context is destroyed below.
++    m_shaders_manager.abandon();
++#else
+     m_shaders_manager.shutdown();
++#endif // SLIC3R_OPENGL_ES
+ 
+-#ifdef __APPLE__ 
++#ifdef __APPLE__
+     // This is an ugly hack needed to solve the crash happening when closing the application on OSX 10.9.5 with newer wxWidgets
+     // The crash is triggered inside wxGLContext destructor
+     if (s_os_info.major != 10 || s_os_info.minor != 9 || s_os_info.micro != 5)
+@@ -290,7 +298,7 @@ OpenGLManager::~OpenGLManager()
+ #endif //__APPLE__
+         if (m_context != nullptr)
+             delete m_context;
+-#ifdef __APPLE__ 
++#ifdef __APPLE__
+     }
+ #endif //__APPLE__
+ }
+-- 
+2.47.3
+
